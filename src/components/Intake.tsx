@@ -15,9 +15,11 @@ interface IntakeProps {
   loadingModels: boolean
   generating: boolean
   error: string | null
+  guided: boolean
+  onGuidedChange: (value: boolean) => void
 }
 
-export function Intake({ prompt, onPromptChange, onStart, recording, mode, onModeChange, models, selectedModel, onModelChange, loadingModels, generating, error }: IntakeProps) {
+export function Intake({ prompt, onPromptChange, onStart, recording, mode, onModeChange, models, selectedModel, onModelChange, loadingModels, generating, error, guided, onGuidedChange }: IntakeProps) {
   return (
     <main className="intake-shell">
       <div className="intake-shell__sky" aria-hidden="true">
@@ -38,10 +40,10 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p className="intake-kicker">Decision observatory</p>
-          <h1>Find what your decision <em>depends on.</em></h1>
+          <p className="intake-kicker">Decision intelligence, on your machine</p>
+          <h1>Find what your decision <em>really depends on.</em></h1>
           <p className="intake-lede">
-            Meridian turns competing futures into an inspectable model, then lets you move the assumptions yourself.
+            Compare the strongest case for every path, uncover hidden tradeoffs, and see exactly what could change the answer.
           </p>
         </motion.div>
 
@@ -73,6 +75,11 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
                   </select>
                 </label>
               )}
+              <label className="guidance-toggle">
+                <input type="checkbox" checked={guided} onChange={(event) => onGuidedChange(event.target.checked)} />
+                <span aria-hidden="true"><i /></span>
+                Guide me through the result
+              </label>
             </div>
           )}
           {error && <p className="intake-error" role="alert">{error}</p>}
@@ -82,7 +89,7 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
             </button>
             <span className="character-count">{prompt.length}/520</span>
             <button className="primary-button" type="button" onClick={onStart} disabled={!prompt.trim() || generating || (mode === 'live' && !selectedModel)}>
-              {generating ? 'Council is reasoning locally…' : 'Enter the observatory'}
+              {generating ? 'Preparing analysis…' : 'Analyze my decision'}
               <span aria-hidden="true">↗</span>
             </button>
           </div>
@@ -91,7 +98,7 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
 
       {!recording && (
         <div className="intake-note">
-          Curated is deterministic. Live local sends the prompt only to LM Studio on this machine.
+          Live local keeps your prompt and analysis on this machine.
         </div>
       )}
     </main>

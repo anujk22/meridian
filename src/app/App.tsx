@@ -21,6 +21,7 @@ import { AssumptionLedger } from '../components/AssumptionLedger'
 import { BrandMark } from '../components/BrandMark'
 import { ControlDeck } from '../components/ControlDeck'
 import { Intake } from '../components/Intake'
+import { LiveReasoning } from '../components/LiveReasoning'
 import { OutcomePanel } from '../components/OutcomePanel'
 import { PathArena } from '../components/PathArena'
 import { Verdict } from '../components/Verdict'
@@ -47,6 +48,18 @@ const phaseProgress = {
   recompute: 84,
   explore: 94,
   verdict: 100,
+}
+
+const phaseGuidance = {
+  intake: '',
+  decomposition: 'Separating your constraints from the outcomes you care about.',
+  council: 'Bringing together advocates, a skeptic, and a quantitative analyst.',
+  arguments: 'Each path is making its strongest case and naming its weakness.',
+  skeptic: 'Testing the claims most likely to distort the recommendation.',
+  analysis: 'Turning the debate into explicit ranges and confidence levels.',
+  recompute: 'Running the same assumptions across thousands of scenarios.',
+  explore: 'Change one assumption at a time to see what moves the answer.',
+  verdict: 'A conditional recommendation, not a prediction.',
 }
 
 function mutationTitle(mutation: ModelMutation): string {
@@ -84,8 +97,10 @@ export function App() {
   const [generating, setGenerating] = useState(false)
   const [liveError, setLiveError] = useState<string | null>(null)
   const [liveScenario, setLiveScenario] = useState<LiveScenario | null>(null)
+  const [guided, setGuided] = useState(true)
   const runtimeScenarioRef = useRef<LiveScenario | null>(null)
   const mutationCursorRef = useRef(0)
+  const presentedBriefRef = useRef(false)
   const recording = useMemo(() => new URLSearchParams(window.location.search).get('recording') === '1', [])
   const demoSpeed = useMemo(() => {
     const requested = Number(new URLSearchParams(window.location.search).get('speed') ?? 1)
@@ -105,7 +120,7 @@ export function App() {
       .then((available) => {
         const ids = available.map(({ id }) => id)
         setModels(ids)
-        setSelectedModel((current) => current || ids[0] || '')
+        setSelectedModel((current) => current || ids.find((id) => /qwopus.*35b.*a3b/i.test(id)) || ids[0] || '')
       })
       .catch(() => setModels([]))
       .finally(() => setLoadingModels(false))
@@ -173,6 +188,7 @@ export function App() {
     }
     runtimeScenarioRef.current = generated
     mutationCursorRef.current = 0
+    presentedBriefRef.current = false
     setLiveScenario(generated)
     setModel(createInitialModel())
     setCitations({})
@@ -183,8 +199,16 @@ export function App() {
     setModel(createInitialModel())
     setCitations({})
     mutationCursorRef.current = 0
+    presentedBriefRef.current = false
     dispatchDemo({ type: 'reset' })
   }, [])
+
+  useEffect(() => {
+    if (demo.phase !== 'explore' || !guided || presentedBriefRef.current) return
+    presentedBriefRef.current = true
+    const timeout = window.setTimeout(() => dispatchDemo({ type: 'verdict' }), 700)
+    return () => window.clearTimeout(timeout)
+  }, [demo.phase, guided])
 
   useEffect(() => {
     if (demo.phase === 'intake' || demo.phase === 'verdict') return
@@ -216,7 +240,8 @@ export function App() {
   }, [])
 
   if (demo.phase === 'intake') {
-    return <Intake prompt={prompt} onPromptChange={setPrompt} onStart={() => void startDemo()} recording={recording} mode={recording ? 'curated' : mode} onModeChange={setMode} models={models} selectedModel={selectedModel} onModelChange={setSelectedModel} loadingModels={loadingModels} generating={generating} error={liveError} />
+    if (generating) return <LiveReasoning prompt={prompt} model={selectedModel} />
+    return <Intake prompt={prompt} onPromptChange={setPrompt} onStart={() => void startDemo()} recording={recording} mode={recording ? 'curated' : mode} onModeChange={setMode} models={models} selectedModel={selectedModel} onModelChange={setSelectedModel} loadingModels={loadingModels} generating={generating} error={liveError} guided={guided} onGuidedChange={setGuided} />
   }
 
   return (
@@ -225,7 +250,7 @@ export function App() {
       <header className="instrument-rail">
         <BrandMark compact />
         <div className="phase-readout">
-          <span>{phaseLabels[demo.phase]}</span>
+          <span>{phaseLabels[demo.phase]} <small>{phaseGuidance[demo.phase]}</small></span>
           <div><motion.i animate={{ width: `${phaseProgress[demo.phase]}%` }} /></div>
         </div>
         <div className="instrument-rail__status">
@@ -265,7 +290,7 @@ export function App() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 44, opacity: 0 }}
           >
-            <ControlDeck model={model} onMutation={handleUserMutation} onVerdict={() => dispatchDemo({ type: 'verdict' })} />
+            <ControlDeck model={model} onMutation={handleUserMutation} onVerdict={() => dispatchDemo({ type: 'verdict' })} leader={results.options.find((option) => option.id === results.leaderId)?.label ?? 'Leading path'} share={results.options.find((option) => option.id === results.leaderId)?.share ?? 0} sensitivity={results.sensitivity.label} />
           </motion.div>
         )}
       </AnimatePresence>

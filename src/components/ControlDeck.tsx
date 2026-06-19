@@ -4,6 +4,9 @@ interface ControlDeckProps {
   model: DecisionModel
   onMutation: (mutation: ModelMutation) => void
   onVerdict: () => void
+  leader: string
+  share: number
+  sensitivity: string
 }
 
 const sliderFactors: Array<{ key: FactorKey; label: string }> = [
@@ -12,13 +15,17 @@ const sliderFactors: Array<{ key: FactorKey; label: string }> = [
   { key: 'ownershipUpside', label: 'Ownership' },
 ]
 
-export function ControlDeck({ model, onMutation, onVerdict }: ControlDeckProps) {
+export function ControlDeck({ model, onMutation, onVerdict, leader, share, sensitivity }: ControlDeckProps) {
   const { assumptions } = model
   return (
     <section className="control-deck" aria-label="What-if controls">
       <div className="control-deck__title">
-        <div><span>What changes the answer?</span><strong>Move the assumptions.</strong></div>
-        <button type="button" className="primary-button" onClick={onVerdict}>Open decision brief</button>
+        <div>
+          <span>Analysis complete</span>
+          <strong>{leader} leads in {share}% of scenarios.</strong>
+          <p>Try changing <b>{sensitivity.toLowerCase()}</b> first. It has the strongest effect on the recommendation.</p>
+        </div>
+        <button type="button" className="primary-button" onClick={onVerdict}>Review recommendation</button>
       </div>
 
       <div className="control-deck__sliders">

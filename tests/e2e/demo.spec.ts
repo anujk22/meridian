@@ -18,13 +18,13 @@ test.describe('recording path', () => {
     })
 
     await page.goto('/?recording=1&speed=20')
-    await expect(page.getByRole('heading', { name: /Find what your decision depends on/i })).toBeVisible()
-    await page.getByRole('button', { name: 'Enter the observatory' }).click()
-    await expect(page.getByText('What-if exploration')).toBeVisible({ timeout: 4_000 })
+    await expect(page.getByRole('heading', { name: /Find what your decision really depends on/i })).toBeVisible()
+    await page.getByRole('button', { name: 'Analyze my decision' }).click()
+    await expect(page.getByRole('heading', { name: /Choose funded AI research/i })).toBeVisible({ timeout: 5_000 })
+    await page.getByRole('button', { name: 'Adjust assumptions' }).click()
     await expect(page.locator('.leader-readout strong')).toHaveText('Research')
-    await expect(page.getByText('Research optionality raised')).toBeVisible()
 
-    await page.getByRole('button', { name: 'Open decision brief' }).click()
+    await page.getByRole('button', { name: 'Review recommendation' }).click()
     await expect(page.getByRole('heading', { name: /Choose funded AI research/i })).toBeVisible()
     await expect(page.getByText(/assumption-based/i)).toBeVisible()
 
@@ -34,8 +34,9 @@ test.describe('recording path', () => {
 
   test('lets all three paths lead through the shared controls', async ({ page }) => {
     await page.goto('/?recording=1&speed=20')
-    await page.getByRole('button', { name: 'Enter the observatory' }).click()
-    await expect(page.getByText('What-if exploration')).toBeVisible({ timeout: 4_000 })
+    await page.getByRole('button', { name: 'Analyze my decision' }).click()
+    await expect(page.getByRole('heading', { name: /Choose funded AI research/i })).toBeVisible({ timeout: 5_000 })
+    await page.getByRole('button', { name: 'Adjust assumptions' }).click()
 
     await page.getByRole('slider', { name: 'Risk tolerance' }).fill('0')
     await page.getByRole('checkbox', { name: 'Need high income now' }).check()
@@ -59,8 +60,9 @@ test.describe('recording viewport', () => {
 
   test('fits the short recording crop and honors reduced motion', async ({ page }) => {
     await page.goto('/?recording=1&speed=20')
-    await page.getByRole('button', { name: 'Enter the observatory' }).click()
-    await expect(page.getByText('What-if exploration')).toBeVisible({ timeout: 4_000 })
+    await page.getByRole('button', { name: 'Analyze my decision' }).click()
+    await expect(page.getByRole('heading', { name: /Choose funded AI research/i })).toBeVisible({ timeout: 5_000 })
+    await page.getByRole('button', { name: 'Adjust assumptions' }).click()
 
     const dimensions = await page.evaluate(() => ({
       width: document.documentElement.scrollWidth,
@@ -70,6 +72,33 @@ test.describe('recording viewport', () => {
     }))
     expect(dimensions.width).toBeLessThanOrEqual(dimensions.viewportWidth)
     expect(dimensions.height).toBeLessThanOrEqual(dimensions.viewportHeight)
-    await expect(page.getByRole('button', { name: 'Open decision brief' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Review recommendation' })).toBeVisible()
+  })
+})
+
+test.describe('live local handoff', () => {
+  test.use({ viewport: { width: 1440, height: 900 } })
+
+  test('moves off intake immediately and prefers the loaded qwopus 35B model', async ({ page }) => {
+    await page.route('**/lmstudio/v1/models', (route) => route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({ data: [
+        { id: 'qwen/qwen3.5-9b' },
+        { id: 'qwopus3.6-35b-a3b-v1-mlx-mixed_4_6' },
+      ] }),
+    }))
+    await page.route('**/lmstudio/v1/chat/completions', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 4_000))
+      await route.abort()
+    })
+
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Live local' }).click()
+    await expect(page.getByLabel('LM Studio model')).toHaveValue('qwopus3.6-35b-a3b-v1-mlx-mixed_4_6')
+    await page.getByRole('button', { name: 'Analyze my decision' }).click()
+
+    await expect(page.getByText(/The council is thinking/i)).toBeVisible()
+    await expect(page.getByText(/move into the deliberation automatically/i)).toBeVisible()
+    await expect(page.getByRole('textbox')).toHaveCount(0)
   })
 })
