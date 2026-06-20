@@ -36,7 +36,7 @@ export const initialDemoState: DemoState = {
 
 export function demoReducer(state: DemoState, action: DemoAction): DemoState {
   if (action.type === 'start') {
-    return { ...initialDemoState, running: true, activeAgent: 'meridian' }
+    return { ...initialDemoState, running: true, activeAgent: 'stableAdvocate' }
   }
   if (action.type === 'reset') return initialDemoState
   if (action.type === 'pause') return { ...state, paused: action.value }

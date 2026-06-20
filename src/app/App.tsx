@@ -16,8 +16,6 @@ import {
 } from '../scenario/builtin'
 import { demoReducer, initialDemoState } from '../scenario/reducer'
 import { useDemoTimeline } from '../scenario/useDemoTimeline'
-import { AgentCouncil } from '../components/AgentCouncil'
-import { AssumptionLedger } from '../components/AssumptionLedger'
 import { BrandMark } from '../components/BrandMark'
 import { ControlDeck } from '../components/ControlDeck'
 import { Intake } from '../components/Intake'
@@ -38,28 +36,10 @@ const phaseLabels = {
   verdict: 'Decision brief',
 }
 
-const phaseProgress = {
-  intake: 0,
-  decomposition: 12,
-  council: 24,
-  arguments: 42,
-  skeptic: 60,
-  analysis: 72,
-  recompute: 84,
-  explore: 94,
-  verdict: 100,
-}
-
-const phaseGuidance = {
-  intake: '',
-  decomposition: 'Separating your constraints from the outcomes you care about.',
-  council: 'Bringing together advocates, a skeptic, and a quantitative analyst.',
-  arguments: 'Each path is making its strongest case and naming its weakness.',
-  skeptic: 'Testing the claims most likely to distort the recommendation.',
-  analysis: 'Turning the debate into explicit ranges and confidence levels.',
-  recompute: 'Running the same assumptions across thousands of scenarios.',
-  explore: 'Change one assumption at a time to see what moves the answer.',
-  verdict: 'A conditional recommendation, not a prediction.',
+function councilPhase(phase: keyof typeof phaseLabels): 1 | 2 | 3 {
+  if (phase === 'decomposition' || phase === 'council') return 1
+  if (phase === 'arguments' || phase === 'skeptic') return 2
+  return 3
 }
 
 function mutationTitle(mutation: ModelMutation): string {
@@ -98,6 +78,7 @@ export function App() {
   const [liveError, setLiveError] = useState<string | null>(null)
   const [liveScenario, setLiveScenario] = useState<LiveScenario | null>(null)
   const [guided, setGuided] = useState(true)
+  const [controlsOpen, setControlsOpen] = useState(false)
   const runtimeScenarioRef = useRef<LiveScenario | null>(null)
   const mutationCursorRef = useRef(0)
   const presentedBriefRef = useRef(false)
@@ -192,6 +173,7 @@ export function App() {
     setLiveScenario(generated)
     setModel(createInitialModel())
     setCitations({})
+    setControlsOpen(false)
     dispatchDemo({ type: 'start' })
   }, [mode, prompt, selectedModel])
 
@@ -200,15 +182,16 @@ export function App() {
     setCitations({})
     mutationCursorRef.current = 0
     presentedBriefRef.current = false
+    setControlsOpen(false)
     dispatchDemo({ type: 'reset' })
   }, [])
 
   useEffect(() => {
-    if (demo.phase !== 'explore' || !guided || presentedBriefRef.current) return
+    if (demo.phase !== 'explore' || !guided || controlsOpen || presentedBriefRef.current) return
     presentedBriefRef.current = true
     const timeout = window.setTimeout(() => dispatchDemo({ type: 'verdict' }), 700)
     return () => window.clearTimeout(timeout)
-  }, [demo.phase, guided])
+  }, [controlsOpen, demo.phase, guided])
 
   useEffect(() => {
     if (demo.phase === 'intake' || demo.phase === 'verdict') return
@@ -239,19 +222,31 @@ export function App() {
     })
   }, [])
 
+  const handleTestAssumptions = useCallback(() => {
+    if (demo.phase === 'explore') {
+      setControlsOpen((current) => !current)
+      return
+    }
+    setGuided(false)
+    setControlsOpen(true)
+    dispatchDemo({ type: 'explore' })
+  }, [demo.phase])
+
   if (demo.phase === 'intake') {
     if (generating) return <LiveReasoning prompt={prompt} model={selectedModel} />
     return <Intake prompt={prompt} onPromptChange={setPrompt} onStart={() => void startDemo()} recording={recording} mode={recording ? 'curated' : mode} onModeChange={setMode} models={models} selectedModel={selectedModel} onModelChange={setSelectedModel} loadingModels={loadingModels} generating={generating} error={liveError} guided={guided} onGuidedChange={setGuided} />
   }
 
+  const activeCouncilPhase = councilPhase(demo.phase)
+
   return (
-    <div className={`simulation-shell simulation-shell--${demo.phase}${demo.phase === 'explore' ? ' has-controls' : ''}${recording ? ' is-recording' : ''}`}>
+    <div className={`simulation-shell simulation-shell--${demo.phase}${controlsOpen ? ' has-controls' : ''}${recording ? ' is-recording' : ''}`}>
       <div className="observatory-background" aria-hidden="true"><span /><i /><b /></div>
       <header className="instrument-rail">
         <BrandMark compact />
         <div className="phase-readout">
-          <span>{phaseLabels[demo.phase]} <small>{phaseGuidance[demo.phase]}</small></span>
-          <div><motion.i animate={{ width: `${phaseProgress[demo.phase]}%` }} /></div>
+          <span><i /> Council deliberation</span>
+          <small>{phaseLabels[demo.phase]} · Phase {activeCouncilPhase} of 3</small>
         </div>
         <div className="instrument-rail__status">
           <span className="privacy-badge"><i /> Local & private</span>
@@ -266,33 +261,43 @@ export function App() {
       </header>
 
       <div className="stage-grid">
-        <AgentCouncil activeAgent={demo.activeAgent} challengedAgent={demo.challengedAgent} />
+        <nav className="phase-stepper" aria-label="Deliberation progress">
+          {[
+            { number: 1, label: 'Independent memos' },
+            { number: 2, label: 'Cross-examination' },
+            { number: 3, label: 'Synthesis' },
+          ].map((step) => {
+            const status = step.number < activeCouncilPhase ? 'complete' : step.number === activeCouncilPhase ? 'active' : 'queued'
+            return (
+              <div className={`phase-step is-${status}`} key={step.number}>
+                <span>{status === 'complete' ? '✓' : step.number}</span>
+                <div><strong>{step.label}</strong><small>{status === 'complete' ? 'Completed' : status === 'active' ? 'Active' : 'Queued'}</small></div>
+              </div>
+            )
+          })}
+        </nav>
         <PathArena
           phase={demo.phase}
-          prompt={prompt}
           visibleClaimIds={demo.visibleClaimIds}
           visibleConsiderationIds={demo.visibleConsiderationIds}
           citations={citations}
           claims={scenario.claims}
           hiddenConsiderations={scenario.hiddenConsiderations}
-          contextChips={scenario.contextChips}
-          goalChips={scenario.goalChips}
           activeAgent={demo.activeAgent}
           latestLedgerEntry={demo.ledger.at(-1) ?? null}
         />
-        <AssumptionLedger entries={demo.ledger} focused={demo.focus === 'ledger'} />
-        <OutcomePanel results={results} focused={demo.focus === 'axis'} />
+        <OutcomePanel results={results} focused={demo.focus === 'axis'} controlsOpen={controlsOpen} onTestAssumptions={handleTestAssumptions} />
       </div>
 
       <AnimatePresence>
-        {demo.phase === 'explore' && (
+        {demo.phase === 'explore' && controlsOpen && (
           <motion.div
             className="control-deck-wrap"
             initial={{ y: 44, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 44, opacity: 0 }}
           >
-            <ControlDeck model={model} onMutation={handleUserMutation} onVerdict={() => dispatchDemo({ type: 'verdict' })} leader={results.options.find((option) => option.id === results.leaderId)?.label ?? 'Leading path'} share={results.options.find((option) => option.id === results.leaderId)?.share ?? 0} sensitivity={results.sensitivity.label} />
+            <ControlDeck model={model} onMutation={handleUserMutation} onVerdict={() => { setControlsOpen(false); dispatchDemo({ type: 'verdict' }) }} leader={results.options.find((option) => option.id === results.leaderId)?.label ?? 'Leading path'} share={results.options.find((option) => option.id === results.leaderId)?.share ?? 0} sensitivity={results.sensitivity.label} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -301,7 +306,7 @@ export function App() {
         {demo.phase === 'verdict' && (
           <Verdict
             results={results}
-            onBack={() => dispatchDemo({ type: 'explore' })}
+            onBack={() => { setControlsOpen(true); dispatchDemo({ type: 'explore' }) }}
             onRestart={resetDemo}
           />
         )}

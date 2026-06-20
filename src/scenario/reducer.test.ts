@@ -6,7 +6,7 @@ describe('demo reducer', () => {
   it('starts and resets the deterministic flow', () => {
     const started = demoReducer(initialDemoState, { type: 'start' })
     expect(started.running).toBe(true)
-    expect(started.activeAgent).toBe('meridian')
+    expect(started.activeAgent).toBe('stableAdvocate')
     expect(demoReducer(started, { type: 'reset' })).toEqual(initialDemoState)
   })
 
@@ -24,7 +24,7 @@ describe('demo reducer', () => {
       mutation: SKEPTIC_MUTATIONS[0],
       ledger: {
         id: 'one',
-        actor: 'Skeptic' as const,
+        actor: 'Vesper' as const,
         title: 'Changed',
         detail: 'Reason',
         tone: 'risk' as const,

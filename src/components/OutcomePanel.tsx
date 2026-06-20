@@ -6,43 +6,34 @@ const shortNames: Record<OptionId, string> = { stable: 'Stable', startup: 'Start
 interface OutcomePanelProps {
   results: DecisionResults
   focused: boolean
+  controlsOpen: boolean
+  onTestAssumptions: () => void
 }
 
-export function OutcomePanel({ results, focused }: OutcomePanelProps) {
+export function OutcomePanel({ results, focused, controlsOpen, onTestAssumptions }: OutcomePanelProps) {
   const leader = results.options.find((option) => option.id === results.leaderId)!
 
   return (
-    <aside className={`outcome-panel${focused ? ' is-focused' : ''}`} aria-label="Outcome simulator">
-      <div className="panel-heading">
-        <span>Current outlook</span>
-        <small>{results.sampleCount.toLocaleString()} scenarios</small>
-      </div>
-
+    <aside className={`outcome-panel${focused ? ' is-focused' : ''}`} aria-label="Current decision lean">
       <div className="leader-readout" aria-live="polite">
-        <span>Leading path</span>
-        <strong>{shortNames[leader.id]}</strong>
-        <p>Leads in {leader.share}% of simulated scenarios under current assumptions.</p>
+        <span>Current lean</span>
+        <div><strong>{shortNames[leader.id]}</strong><b>, conditionally</b><i aria-label="The result depends on current assumptions">i</i></div>
       </div>
 
       <div className="scenario-shares">
         {results.options.map((option) => (
           <div className={`share-row share-row--${option.id}`} key={option.id}>
             <div><span>{shortNames[option.id]}</span><strong>{option.share}%</strong></div>
-            <div className="share-track"><motion.i animate={{ width: `${option.share}%` }} transition={{ duration: 0.7 }} /></div>
+            <div className="share-track"><motion.i animate={{ width: `${option.share}%` }} transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }} /></div>
           </div>
         ))}
       </div>
 
-      <div className="range-readout">
-        <div><span>Best floor</span><strong>{shortNames[[...results.options].sort((a, b) => b.floor - a.floor)[0].id]}</strong></div>
-        <div><span>Best ceiling</span><strong>{shortNames[[...results.options].sort((a, b) => b.ceiling - a.ceiling)[0].id]}</strong></div>
-      </div>
+      <p className="sensitivity">Changes if <strong>{results.sensitivity.label.toLowerCase()}</strong> cannot be verified.</p>
 
-      <div className="sensitivity">
-        <span>Most sensitive assumption</span>
-        <strong>{results.sensitivity.label}</strong>
-        <small>Moves the leader by about {Math.round(results.sensitivity.impact)} points</small>
-      </div>
+      <button className="test-assumptions-button" type="button" onClick={onTestAssumptions}>
+        {controlsOpen ? 'Close assumptions' : 'Test assumptions'} <span aria-hidden="true">›</span>
+      </button>
     </aside>
   )
 }

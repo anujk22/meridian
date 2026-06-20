@@ -13,7 +13,7 @@ export type DemoPhase =
   | 'explore'
   | 'verdict'
 
-export type AgentId = 'meridian' | 'stableAdvocate' | 'startupAdvocate' | 'researchAdvocate' | 'skeptic' | 'analyst'
+export type AgentId = 'stableAdvocate' | 'startupAdvocate' | 'researchAdvocate' | 'skeptic'
 
 export interface Agent {
   id: AgentId
@@ -66,12 +66,10 @@ export const GOAL_CHIPS = [
 ]
 
 export const AGENTS: Agent[] = [
-  { id: 'meridian', name: 'Meridian', role: 'Navigator', symbol: 'M', tone: 'brass' },
   { id: 'stableAdvocate', name: 'Harbor', role: 'Stable path', symbol: 'H', tone: 'stable' },
   { id: 'startupAdvocate', name: 'Aster', role: 'Venture path', symbol: 'A', tone: 'startup' },
   { id: 'researchAdvocate', name: 'Lumen', role: 'Research path', symbol: 'L', tone: 'research' },
   { id: 'skeptic', name: 'Vesper', role: 'Red team', symbol: 'V', tone: 'risk' },
-  { id: 'analyst', name: 'Kepler', role: 'Quant analyst', symbol: 'K', tone: 'analysis' },
 ]
 
 export const CLAIMS: ClaimArtifact[] = [
@@ -191,9 +189,9 @@ export function createDebatedModel() {
 }
 
 export const TIMELINE: TimelineEvent[] = [
-  { at: 0, type: 'phase', phase: 'decomposition', activeAgent: 'meridian' },
+  { at: 0, type: 'phase', phase: 'decomposition', activeAgent: 'stableAdvocate' },
   { at: 650, type: 'focus', target: 'paths' },
-  { at: 2300, type: 'phase', phase: 'council', activeAgent: 'meridian' },
+  { at: 2300, type: 'phase', phase: 'council', activeAgent: 'stableAdvocate' },
   { at: 3900, type: 'phase', phase: 'arguments', activeAgent: 'stableAdvocate' },
   { at: 4200, type: 'claim', claimId: 'stable-floor', activeAgent: 'stableAdvocate' },
   { at: 5250, type: 'claim', claimId: 'stable-concession', activeAgent: 'stableAdvocate' },
@@ -211,7 +209,7 @@ export const TIMELINE: TimelineEvent[] = [
     mutation: SKEPTIC_MUTATIONS[0],
     ledger: {
       id: 'ledger-startup-floor',
-      actor: 'Skeptic',
+      actor: 'Vesper',
       title: 'Startup floor reduced',
       detail: 'Equity is illiquid; security range lowered and confidence reduced.',
       tone: 'risk',
@@ -223,14 +221,14 @@ export const TIMELINE: TimelineEvent[] = [
     mutation: SKEPTIC_MUTATIONS[1],
     ledger: {
       id: 'ledger-startup-upside',
-      actor: 'Skeptic',
+      actor: 'Vesper',
       title: 'Startup upside widened',
       detail: 'No verified traction, so upside remains possible but less certain.',
       tone: 'risk',
     },
   },
   { at: 14100, type: 'hidden', considerationId: 'identity-vs-goal', activeAgent: 'skeptic' },
-  { at: 15100, type: 'phase', phase: 'analysis', activeAgent: 'analyst' },
+  { at: 15100, type: 'phase', phase: 'analysis', activeAgent: 'researchAdvocate' },
   { at: 15400, type: 'focus', target: 'ledger' },
   {
     at: 16200,
@@ -238,7 +236,7 @@ export const TIMELINE: TimelineEvent[] = [
     mutation: ANALYST_MUTATIONS[0],
     ledger: {
       id: 'ledger-ai-depth',
-      actor: 'Analyst',
+      actor: 'Lumen',
       title: 'AI depth raised',
       detail: 'Research aligns most directly with the user’s highest stated priority.',
       tone: 'analysis',
@@ -250,14 +248,14 @@ export const TIMELINE: TimelineEvent[] = [
     mutation: ANALYST_MUTATIONS[1],
     ledger: {
       id: 'ledger-optionality',
-      actor: 'Analyst',
+      actor: 'Lumen',
       title: 'Research optionality raised',
       detail: 'Funding and lab access preserve research and industry branches.',
       tone: 'analysis',
     },
   },
-  { at: 18100, type: 'phase', phase: 'recompute', activeAgent: 'analyst' },
+  { at: 18100, type: 'phase', phase: 'recompute', activeAgent: 'researchAdvocate' },
   { at: 18300, type: 'focus', target: 'axis' },
-  { at: 20500, type: 'phase', phase: 'explore', activeAgent: 'meridian' },
+  { at: 20500, type: 'phase', phase: 'explore', activeAgent: 'stableAdvocate' },
   { at: 20700, type: 'focus', target: 'controls' },
 ]

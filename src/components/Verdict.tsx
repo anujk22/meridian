@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import type { DecisionResults, OptionId } from '../domain/types'
 import { BrandMark } from './BrandMark'
 
@@ -33,14 +33,15 @@ const verdictCopy: Record<OptionId, {
 }
 
 export function Verdict({ results, onBack, onRestart }: { results: DecisionResults; onBack: () => void; onRestart: () => void }) {
+  const reducedMotion = useReducedMotion()
   const leader = results.options.find((option) => option.id === results.leaderId)!
   const copy = verdictCopy[results.leaderId]
   return (
     <motion.main
       className="verdict"
-      initial={{ y: '100%' }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      initial={reducedMotion ? { opacity: 0 } : { y: '100%' }}
+      animate={reducedMotion ? { opacity: 1 } : { y: 0 }}
+      transition={{ duration: reducedMotion ? 0.18 : 0.8, ease: [0.16, 1, 0.3, 1] }}
     >
       <header className="verdict__header">
         <BrandMark />

@@ -107,7 +107,7 @@ export type ModelMutation =
 
 export interface LedgerEntry {
   id: string
-  actor: 'Meridian' | 'Skeptic' | 'Analyst' | 'You'
+  actor: 'Harbor' | 'Aster' | 'Lumen' | 'Vesper' | 'You'
   title: string
   detail: string
   tone: 'neutral' | 'risk' | 'analysis' | 'user'

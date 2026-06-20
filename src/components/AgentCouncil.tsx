@@ -1,5 +1,6 @@
 import { motion } from 'motion/react'
 import { AGENTS, type AgentId } from '../scenario/builtin'
+import { AgentGlyph } from './AgentGlyph'
 
 interface AgentCouncilProps {
   activeAgent: AgentId | null
@@ -7,12 +8,10 @@ interface AgentCouncilProps {
 }
 
 const personas = {
-  meridian: 'Synthesizer',
   stableAdvocate: 'Pragmatist',
   startupAdvocate: 'Builder',
   researchAdvocate: 'Scholar',
   skeptic: 'Contrarian',
-  analyst: 'Quantifier',
 }
 
 export function AgentCouncil({ activeAgent, challengedAgent }: AgentCouncilProps) {
@@ -34,9 +33,7 @@ export function AgentCouncil({ activeAgent, challengedAgent }: AgentCouncilProps
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.06, duration: 0.4 }}
             >
-              <div className="agent__seal" aria-hidden="true">
-                <span>{agent.symbol}</span>
-              </div>
+              <AgentGlyph agentId={agent.id} active={isActive} className="agent__seal" />
               <div className="agent__identity" title={agent.role}>
                 <strong>{agent.name}</strong>
                 <span>{personas[agent.id]}</span>
