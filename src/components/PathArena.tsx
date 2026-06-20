@@ -27,8 +27,6 @@ const routeByAgent: Record<AgentId, string> = {
   skeptic: 'M 900 442 C 790 430, 725 358, 655 310',
 }
 
-const shortPathNames = { stable: 'Stable', startup: 'Startup', research: 'Research' }
-
 interface PathArenaProps {
   phase: DemoPhase
   visibleClaimIds: string[]
@@ -136,9 +134,6 @@ export function PathArena({
 
       <div className="council-atlas">
         <AtlasGlobe active={isSynthesis} preparing={preparing} results={results} />
-        <div className="atlas-path-shares" aria-label="Simulated scenario shares">
-          {results.options.map((option) => <span className={`atlas-path-share atlas-path-share--${option.id}`} key={option.id}>{shortPathNames[option.id]} <strong>{option.share}%</strong></span>)}
-        </div>
       </div>
 
       <div className="assumption-cloud" aria-label="Assumptions being tested">
@@ -167,10 +162,10 @@ export function PathArena({
             <div className="council-agent__identity">
               <strong>{agent.name}</strong>
               <span>{personaCopy[agent.id]}</span>
-            </div>
-            <div className={`council-agent__status${isChallenging ? ' is-challenging' : ''}`}>
-              <i />
-              {preparationError ? 'Council paused' : preparing ? 'Reading the decision' : isChallenging ? 'Challenging Aster' : isEngaged ? (isSynthesis ? 'Synthesizing' : 'Counseling') : memo ? 'Memo delivered' : <LoadingEllipsis label={`${agent.name} is weighing the decision`} />}
+              <div className={`council-agent__status${isChallenging ? ' is-challenging' : ''}`}>
+                <i />
+                {preparationError ? 'Council paused' : preparing ? 'Reading the decision' : isChallenging ? 'Challenging Aster' : isEngaged ? (isSynthesis ? 'Synthesizing' : 'Counseling') : memo ? 'Memo delivered' : <LoadingEllipsis label={`${agent.name} is weighing the decision`} />}
+              </div>
             </div>
           </motion.article>
         )
