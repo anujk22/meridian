@@ -10,8 +10,8 @@ interface ControlDeckProps {
 }
 
 const sliderFactors: Array<{ key: FactorKey; label: string }> = [
-  { key: 'aiGrowth', label: 'AI growth' },
-  { key: 'financialFloor', label: 'Financial floor' },
+  { key: 'aiGrowth', label: 'AI Growth' },
+  { key: 'financialFloor', label: 'Financial Floor' },
   { key: 'ownershipUpside', label: 'Ownership' },
 ]
 
@@ -21,16 +21,16 @@ export function ControlDeck({ model, onMutation, onVerdict, leader, share, sensi
     <section className="control-deck" aria-label="What-if controls">
       <div className="control-deck__title">
         <div>
-          <span>Analysis complete</span>
+          <span>Analysis Complete</span>
           <strong>{leader} leads in {share}% of scenarios.</strong>
           <p>Try changing <b>{sensitivity.toLowerCase()}</b> first. It has the strongest effect on the recommendation.</p>
         </div>
-        <button type="button" className="primary-button" onClick={onVerdict}>Review recommendation</button>
+        <button type="button" className="primary-button" onClick={onVerdict}>Review Recommendation</button>
       </div>
 
       <div className="control-deck__sliders">
         <label>
-          <span><b>Risk tolerance</b><output>{Math.round(assumptions.riskTolerance * 100)}</output></span>
+          <span><b>Risk Tolerance</b><output>{Math.round(assumptions.riskTolerance * 100)}</output></span>
           <input
             aria-label="Risk tolerance"
             type="range"
@@ -57,22 +57,22 @@ export function ControlDeck({ model, onMutation, onVerdict, leader, share, sensi
 
       <div className="control-deck__toggles">
         <Toggle
-          label="Master’s fully funded"
+          label="Master’s Fully Funded"
           checked={assumptions.toggles.mastersFunded}
           onChange={(value) => onMutation({ kind: 'setToggle', toggle: 'mastersFunded', value, reason: 'User changed the funding assumption.' })}
         />
         <Toggle
-          label="Startup has traction"
+          label="Startup Has Traction"
           checked={assumptions.toggles.startupTraction}
           onChange={(value) => onMutation({ kind: 'setToggle', toggle: 'startupTraction', value, reason: 'User changed the traction assumption.' })}
         />
         <Toggle
-          label="Need high income now"
+          label="Need High Income Now"
           checked={assumptions.toggles.incomeNow}
           onChange={(value) => onMutation({ kind: 'setToggle', toggle: 'incomeNow', value, reason: 'User changed the immediate-income constraint.' })}
         />
         <Toggle
-          label="Prefer building"
+          label="Prefer Building"
           checked={assumptions.toggles.preferBuilding}
           onChange={(value) => onMutation({ kind: 'setToggle', toggle: 'preferBuilding', value, reason: 'User changed the ownership preference.' })}
         />

@@ -14,10 +14,10 @@ import { CitationChip } from './CitationChip'
 import { LoadingEllipsis } from './LoadingEllipsis'
 
 const personaCopy: Record<AgentId, string> = {
-  stableAdvocate: 'Protects the financial floor',
-  startupAdvocate: 'Tests asymmetric upside',
-  researchAdvocate: 'Maps durable AI depth',
-  skeptic: 'Challenges the story',
+  stableAdvocate: 'Protects the Financial Floor',
+  startupAdvocate: 'Tests Asymmetric Upside',
+  researchAdvocate: 'Maps Durable AI Depth',
+  skeptic: 'Challenges the Story',
 }
 
 const routeByAgent: Record<AgentId, string> = {
@@ -109,7 +109,7 @@ export function PathArena({
   return (
     <section className={`arena council-map arena--${phase}${preparing ? ' is-preparing' : ''}${preparationError ? ' has-preparation-error' : ''}`} aria-label="Decision council deliberation">
       <div className="council-map__caption">
-        <strong>{preparing ? 'Council assembling' : isCrossExam ? 'Assumption under challenge' : isSynthesis ? 'Council synthesis' : 'Four perspectives, one path decision'}</strong>
+        <strong>{preparing ? 'Council Assembling' : isCrossExam ? 'Assumption Under Challenge' : isSynthesis ? 'Council Synthesis' : 'Four Perspectives, One Path Decision'}</strong>
         <span>{preparing ? 'The atlas stays visible while the local model prepares the memos.' : 'Claims, challenges, evidence, and model changes converge here.'}</span>
       </div>
 
@@ -142,12 +142,12 @@ export function PathArena({
       </div>
 
       <div className="assumption-cloud" aria-label="Assumptions being tested">
-        <span className={isCrossExam ? 'is-challenged' : ''}>financial floor {isCrossExam ? '↓' : ''}</span>
-        <span>startup traction</span>
-        <span className={isSynthesis ? 'is-challenged' : ''}>funded master’s {isSynthesis ? '↑' : ''}</span>
-        <span>AI mentorship</span>
-        <span>role quality</span>
-        <span className={isCrossExam ? 'is-challenged' : ''}>ownership clarity</span>
+        <span className={isCrossExam ? 'is-challenged' : ''}>Financial Floor {isCrossExam ? '↓' : ''}</span>
+        <span>Startup Traction</span>
+        <span className={isSynthesis ? 'is-challenged' : ''}>Funded Master’s {isSynthesis ? '↑' : ''}</span>
+        <span>AI Mentorship</span>
+        <span>Role Quality</span>
+        <span className={isCrossExam ? 'is-challenged' : ''}>Ownership Clarity</span>
       </div>
 
       {AGENTS.map((agent, index) => {
@@ -187,7 +187,7 @@ export function PathArena({
             animate={{ opacity: memo ? 1 : preparing ? 0.46 : 0.68, y: memo ? 0 : 3 }}
             transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="agent-memo__title"><i aria-hidden="true" /><strong>{agent.name} memo</strong><span>{agent.id === 'skeptic' ? 'Challenge' : 'Counsel'}</span></div>
+            <div className="agent-memo__title"><i aria-hidden="true" /><strong>{agent.name} Memo</strong><span>{agent.id === 'skeptic' ? 'Challenge' : 'Counsel'}</span></div>
             {memo ? (
               <>
                 <h3>{memo.title}</h3>
@@ -208,7 +208,7 @@ export function PathArena({
       </AnimatePresence>
 
       <motion.aside className="cross-exam-log" layout aria-live="polite">
-        <div><i /> <strong>{preparing ? 'Preparing live council' : isSynthesis ? 'Live synthesis' : 'Council signal'}</strong></div>
+        <div><i /> <strong>{preparing ? 'Preparing Live Council' : isSynthesis ? 'Live Synthesis' : 'Council Signal'}</strong></div>
         {log.length > 0 ? log.map((line) => <p key={line}>{line}</p>) : <p className="cross-exam-log__loading"><LoadingEllipsis label="Council activity is loading" /></p>}
         {preparationError && onReturnToIntake ? <button type="button" onClick={onReturnToIntake}>Return to decision composer</button> : <small>{preparing ? 'Waiting for local generation' : 'Updated just now'}</small>}
       </motion.aside>

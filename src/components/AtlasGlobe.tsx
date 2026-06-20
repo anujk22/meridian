@@ -109,8 +109,8 @@ export function AtlasGlobe({ compact = false, active = false, preparing = false,
       </Canvas>
       {!compact && (
         <div className="atlas-globe__readout">
-          <strong>{preparing ? 'Assembling council' : active ? 'Synthesizing paths' : 'Decision atlas'}</strong>
-          <span>{results ? `${results.sampleCount.toLocaleString()} scenarios · 5 weighted factors` : 'Mapping the decision space'}</span>
+          <strong>{preparing ? 'Assembling Council' : active ? 'Synthesizing Paths' : 'Decision Atlas'}</strong>
+          <span>{results ? `${results.sampleCount.toLocaleString()} Scenarios · 5 Weighted Factors` : 'Mapping the Decision Space'}</span>
         </div>
       )}
     </div>

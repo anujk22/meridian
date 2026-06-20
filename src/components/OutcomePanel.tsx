@@ -16,7 +16,7 @@ export function OutcomePanel({ results, focused, controlsOpen, onTestAssumptions
   return (
     <aside className={`outcome-panel${focused ? ' is-focused' : ''}`} aria-label="Current decision lean">
       <div className="leader-readout" aria-live="polite">
-        <span>Current lean</span>
+        <span>Current Lean</span>
         <div><strong>{shortNames[leader.id]}</strong><b>, conditionally</b><i aria-label="The result depends on current assumptions">i</i></div>
       </div>
 
@@ -29,10 +29,10 @@ export function OutcomePanel({ results, focused, controlsOpen, onTestAssumptions
         ))}
       </div>
 
-      <p className="sensitivity">Changes if <strong>{results.sensitivity.label.toLowerCase()}</strong> cannot be verified.</p>
+      <p className="sensitivity">Changes if <strong>{results.sensitivity.label}</strong> cannot be verified.</p>
 
       <button className="test-assumptions-button" type="button" onClick={onTestAssumptions}>
-        {controlsOpen ? 'Close assumptions' : 'Test assumptions'} <span aria-hidden="true">›</span>
+        {controlsOpen ? 'Close Assumptions' : 'Test Assumptions'} <span aria-hidden="true">›</span>
       </button>
     </aside>
   )

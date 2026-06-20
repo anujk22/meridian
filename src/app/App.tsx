@@ -25,14 +25,14 @@ import { Verdict } from '../components/Verdict'
 
 const phaseLabels = {
   intake: 'Intake',
-  decomposition: 'Decomposing decision',
-  council: 'Council assembling',
-  arguments: 'Opening arguments',
-  skeptic: 'Red-team review',
-  analysis: 'Quantifying assumptions',
-  recompute: 'Recomputing model',
-  explore: 'What-if exploration',
-  verdict: 'Decision brief',
+  decomposition: 'Decomposing Decision',
+  council: 'Council Assembling',
+  arguments: 'Opening Arguments',
+  skeptic: 'Red-Team Review',
+  analysis: 'Quantifying Assumptions',
+  recompute: 'Recomputing Model',
+  explore: 'What-If Exploration',
+  verdict: 'Decision Brief',
 }
 
 function councilPhase(phase: keyof typeof phaseLabels): 1 | 2 | 3 {
@@ -265,8 +265,8 @@ export function App() {
       <header className="instrument-rail">
         <BrandMark compact />
         <div className="phase-readout">
-          <span><i /> {showingLiveEntry ? 'Live council preparation' : 'Council deliberation'}</span>
-          <small>{showingLiveEntry ? (liveEntryState === 'error' ? 'Council needs attention' : 'Reading the career decision') : `${phaseLabels[displayedPhase]} · Phase ${activeCouncilPhase} of 3`}</small>
+          <span><i /> {showingLiveEntry ? 'Live Council Preparation' : 'Council Deliberation'}</span>
+          <small>{showingLiveEntry ? (liveEntryState === 'error' ? 'Council Needs Attention' : 'Reading the Career Decision') : `${phaseLabels[displayedPhase]} · Phase ${activeCouncilPhase} of 3`}</small>
         </div>
         <div className="instrument-rail__status">
           <span className="privacy-badge"><i /> Local & private</span>
@@ -283,8 +283,8 @@ export function App() {
       <div className="stage-grid">
         <nav className="phase-stepper" aria-label="Deliberation progress">
           {[
-            { number: 1, label: 'Independent memos' },
-            { number: 2, label: 'Cross-examination' },
+            { number: 1, label: 'Independent Memos' },
+            { number: 2, label: 'Cross-Examination' },
             { number: 3, label: 'Synthesis' },
           ].map((step) => {
             const status = step.number < activeCouncilPhase ? 'complete' : step.number === activeCouncilPhase ? 'active' : 'queued'
