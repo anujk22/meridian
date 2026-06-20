@@ -774,15 +774,38 @@ input[type='range']::-webkit-slider-thumb { border-color: white; background: var
 .intake-instrument .example-chip { flex: 0 0 auto; padding: 7px 10px; font-size: 0.67rem; }
 .intake-error { margin: 8px 0 0; color: oklch(0.5 0.18 28); }
 
-/* Layered Decision Atlas */
-.atlas-globe { position: relative; width: 310px; height: 310px; }
-.atlas-globe::before,
-.atlas-globe::after { content: ''; position: absolute; inset: 12%; border: 1px solid oklch(0.58 0.18 257 / 0.14); border-radius: 50%; pointer-events: none; }
-.atlas-globe::before { inset: -2%; border-style: dashed; animation: atlas-orbit 18s linear infinite; }
-.atlas-globe::after { inset: 8%; border-color: oklch(0.72 0.14 201 / 0.18); box-shadow: 0 0 48px oklch(0.58 0.18 257 / 0.16); }
-.atlas-globe canvas { position: relative; z-index: 1; }
-.atlas-globe.is-active::after,
-.atlas-globe.is-preparing::after { box-shadow: 0 0 70px oklch(0.58 0.18 257 / 0.28); }
+/* Meridian Compass Core */
+.atlas-globe {
+  position: relative;
+  isolation: isolate;
+  width: 310px;
+  height: 310px;
+  background: radial-gradient(circle, oklch(0.7 0.16 253 / 0.16), transparent 62%);
+}
+.atlas-globe::before { content: ''; position: absolute; inset: 17%; z-index: 0; border-radius: 50%; box-shadow: 0 0 54px oklch(0.58 0.2 257 / 0.24); pointer-events: none; }
+.atlas-globe.is-active::before,
+.atlas-globe.is-preparing::before { box-shadow: 0 0 72px oklch(0.58 0.2 257 / 0.34); }
+.meridian-core__svg { position: relative; z-index: 1; display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 16px 26px oklch(0.48 0.15 257 / 0.12)); }
+.meridian-core__glass { stroke: oklch(0.77 0.1 250 / 0.55); stroke-width: 1; }
+.meridian-core__rim { fill: none; stroke-width: 2; }
+.meridian-core__grid { fill: none; stroke: oklch(0.56 0.14 257 / 0.16); stroke-width: 0.8; stroke-dasharray: 2 6; }
+.meridian-core__grid--inner { stroke-dasharray: none; opacity: 0.45; }
+.meridian-core__radials { fill: none; stroke: oklch(0.52 0.16 257 / 0.13); stroke-width: 0.75; }
+.meridian-core__orbit { fill: none; stroke: oklch(0.55 0.2 257 / 0.5); stroke-width: 1.15; transform-origin: 160px 160px; }
+.meridian-core__orbit--one { animation: core-orbit 20s linear infinite; }
+.meridian-core__orbit--two { stroke: oklch(0.66 0.14 234 / 0.42); animation: core-orbit-reverse 24s linear infinite; }
+.meridian-core__orbit--three { stroke: oklch(0.49 0.21 258 / 0.24); stroke-dasharray: 4 8; }
+.meridian-core__axis { fill: oklch(0.58 0.21 257); stroke: oklch(0.49 0.21 258 / 0.72); stroke-width: 1.1; }
+.meridian-core__pulse { fill: oklch(0.72 0.15 250 / 0.08); stroke: oklch(0.58 0.2 257 / 0.36); stroke-width: 1; transform-origin: center; transform-box: fill-box; animation: core-pulse 2.8s ease-in-out infinite; }
+.meridian-core__star { fill: oklch(0.75 0.13 250 / 0.32); stroke: oklch(0.5 0.23 258); stroke-width: 1.4; stroke-linejoin: round; }
+.meridian-core__north { fill: oklch(0.53 0.23 258); }
+.meridian-core__center-ring { fill: oklch(1 0 0 / 0.88); stroke: oklch(0.5 0.22 258); stroke-width: 1.4; }
+.meridian-core__center { fill: white; stroke: oklch(0.49 0.22 258); stroke-width: 2; }
+.meridian-core__shimmers { fill: white; filter: drop-shadow(0 0 5px oklch(0.58 0.2 257 / 0.7)); }
+.meridian-core__shimmers circle { animation: core-shimmer 3.2s ease-in-out infinite; }
+.meridian-core__shimmers circle:nth-child(2) { animation-delay: -0.8s; }
+.meridian-core__shimmers circle:nth-child(3) { animation-delay: -1.6s; }
+.meridian-core__shimmers circle:nth-child(4) { animation-delay: -2.4s; }
 .atlas-globe__readout { position: absolute; left: 50%; bottom: -49px; z-index: 2; display: flex; width: max-content; align-items: center; flex-direction: column; transform: translateX(-50%); }
 .atlas-globe__readout strong { color: var(--ink); font-size: 0.72rem; }
 .atlas-globe__readout span { margin-top: 3px; color: var(--muted); font-size: 0.58rem; }
@@ -927,7 +950,10 @@ input[type='range']::-webkit-slider-thumb { border-color: white; background: var
 .verdict__evidence > div { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .verdict__evidence .citation-chip { padding: 10px; border: 1px solid var(--line-soft); border-radius: 10px; background: oklch(1 0 0 / 0.64); }
 
-@keyframes atlas-orbit { to { transform: rotate(360deg); } }
+@keyframes core-orbit { to { transform: rotate(360deg); } }
+@keyframes core-orbit-reverse { to { transform: rotate(-360deg); } }
+@keyframes core-pulse { 0%, 100% { opacity: 0.55; transform: scale(0.92); } 50% { opacity: 1; transform: scale(1.08); } }
+@keyframes core-shimmer { 0%, 100% { opacity: 0.28; } 50% { opacity: 1; } }
 @keyframes halo-breathe { 50% { transform: scale(1.16); opacity: 0.72; } }
 @keyframes assumption-pulse { 50% { transform: translateY(-2px); box-shadow: 0 8px 26px oklch(0.58 0.18 257 / 0.18); } }
 
@@ -963,7 +989,9 @@ input[type='range']::-webkit-slider-thumb { border-color: white; background: var
 
 @media (prefers-reduced-motion: reduce) {
   .intake-preview > svg path,
-  .atlas-globe::before,
+  .meridian-core__orbit,
+  .meridian-core__pulse,
+  .meridian-core__shimmers circle,
   .council-beam,
   .challenge-beam,
   .council-agent__halo,
