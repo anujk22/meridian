@@ -12,7 +12,6 @@ interface AtlasGlobeProps {
 export function AtlasGlobe({ compact = false, active = false, preparing = false, results, className = '' }: AtlasGlobeProps) {
   const id = useId().replaceAll(':', '')
   const glassId = `core-glass-${id}`
-  const rimId = `core-rim-${id}`
   const glowId = `core-glow-${id}`
 
   return (
@@ -24,11 +23,6 @@ export function AtlasGlobe({ compact = false, active = false, preparing = false,
             <stop offset="0.42" stopColor="#e6f3ff" stopOpacity="0.5" />
             <stop offset="1" stopColor="#b9d9ff" stopOpacity="0.12" />
           </radialGradient>
-          <linearGradient id={rimId} x1="62" y1="54" x2="260" y2="270" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#ffffff" />
-            <stop offset="0.42" stopColor="#5c9dff" />
-            <stop offset="1" stopColor="#185fd2" />
-          </linearGradient>
           <filter id={glowId} x="-60%" y="-60%" width="220%" height="220%">
             <feGaussianBlur stdDeviation="5" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
@@ -36,7 +30,7 @@ export function AtlasGlobe({ compact = false, active = false, preparing = false,
         </defs>
 
         <circle className="meridian-core__glass" cx="160" cy="160" r="111" fill={`url(#${glassId})`} />
-        <circle className="meridian-core__rim" cx="160" cy="160" r="112" stroke={`url(#${rimId})`} />
+        <circle className="meridian-core__rim" cx="160" cy="160" r="112" />
         <circle className="meridian-core__grid" cx="160" cy="160" r="82" />
         <circle className="meridian-core__grid meridian-core__grid--inner" cx="160" cy="160" r="52" />
 
@@ -64,7 +58,6 @@ export function AtlasGlobe({ compact = false, active = false, preparing = false,
           d="M160 92 170 148 228 160 170 172 160 228 150 172 92 160 150 148 160 92Z"
           filter={`url(#${glowId})`}
         />
-        <path className="meridian-core__north" d="M160 92 170 148 160 154 150 148 160 92Z" />
         <circle className="meridian-core__center-ring" cx="160" cy="160" r="15" />
         <circle className="meridian-core__center" cx="160" cy="160" r="5" />
 
