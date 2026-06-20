@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { parseLiveScenario } from './lmStudio'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { listLocalModels, parseLiveScenario, preferredLocalModelId } from './lmStudio'
 
 const validPayload = JSON.stringify({
   context: ['Graduating', 'Limited savings', 'Five-year horizon'],
@@ -21,6 +21,8 @@ const validPayload = JSON.stringify({
 })
 
 describe('LM Studio council response', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
   it('maps validated model JSON onto stable timeline IDs', () => {
     const scenario = parseLiveScenario(`Here is the JSON:\n${validPayload}`, 'local-model')
     expect(scenario.claims.map(({ id }) => id)).toEqual([
@@ -33,5 +35,39 @@ describe('LM Studio council response', () => {
 
   it('rejects incomplete output instead of silently inventing content', () => {
     expect(() => parseLiveScenario('{"context":[]}', 'local-model')).toThrow(/incomplete/i)
+  })
+
+  it('only returns loaded LLM instances and prefers loaded Nemotron', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        models: [
+          { type: 'llm', loaded_instances: [], key: 'downloaded-but-cold' },
+          { type: 'embedding', loaded_instances: [{ id: 'embed-loaded' }] },
+          { type: 'llm', loaded_instances: [{ id: 'qwen-loaded' }] },
+          { type: 'llm', loaded_instances: [{ id: 'nvidia/nemotron-nano-loaded' }] },
+        ],
+      }),
+    }))
+
+    const models = await listLocalModels()
+    expect(models.map(({ id }) => id)).toEqual(['qwen-loaded', 'nvidia/nemotron-nano-loaded'])
+    expect(preferredLocalModelId(models)).toBe('nvidia/nemotron-nano-loaded')
+  })
+
+  it('uses installed Nemotron as the fallback when no LLM is loaded', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        models: [
+          { type: 'llm', key: 'qwen/cold-model', loaded_instances: [] },
+          { type: 'llm', key: 'nvidia/nemotron-3-nano', display_name: 'Nemotron 3 Nano', loaded_instances: [] },
+        ],
+      }),
+    }))
+
+    const models = await listLocalModels()
+    expect(models).toEqual([{ id: 'nvidia/nemotron-3-nano', loaded: false }])
+    expect(preferredLocalModelId(models)).toBe('nvidia/nemotron-3-nano')
   })
 })

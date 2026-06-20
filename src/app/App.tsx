@@ -5,7 +5,7 @@ import { createInitialModel } from '../domain/model'
 import { applyMutation } from '../domain/mutations'
 import type { ModelMutation } from '../domain/types'
 import { retrieveEvidence, type RetrievalResult } from '../evidence/retrieval'
-import { generateLiveScenario, listLocalModels, type LiveScenario } from '../integrations/lmStudio'
+import { generateLiveScenario, listLocalModels, preferredLocalModelId, type LiveScenario } from '../integrations/lmStudio'
 import {
   BUILTIN_PROMPT,
   CLAIMS,
@@ -73,7 +73,7 @@ export function App() {
   const [mode, setMode] = useState<'curated' | 'live'>('curated')
   const [models, setModels] = useState<string[]>([])
   const [selectedModel, setSelectedModel] = useState('')
-  const [loadingModels, setLoadingModels] = useState(true)
+  const [loadingModels, setLoadingModels] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [liveError, setLiveError] = useState<string | null>(null)
   const [liveScenario, setLiveScenario] = useState<LiveScenario | null>(null)
@@ -95,17 +95,22 @@ export function App() {
     hiddenConsiderations: HIDDEN_CONSIDERATIONS,
   }
 
-  useEffect(() => {
-    if (recording) return
-    listLocalModels()
-      .then((available) => {
-        const ids = available.map(({ id }) => id)
-        setModels(ids)
-        setSelectedModel((current) => current || ids.find((id) => /qwopus.*35b.*a3b/i.test(id)) || ids[0] || '')
-      })
-      .catch(() => setModels([]))
-      .finally(() => setLoadingModels(false))
-  }, [recording])
+  const refreshLocalModels = useCallback(async () => {
+    setLoadingModels(true)
+    try {
+      const available = await listLocalModels()
+      const ids = available.map(({ id }) => id)
+      setModels(ids)
+      setSelectedModel((current) => current && ids.includes(current) ? current : preferredLocalModelId(available))
+      return available
+    } catch (error) {
+      setModels([])
+      setSelectedModel('')
+      throw error
+    } finally {
+      setLoadingModels(false)
+    }
+  }, [])
 
   const retrieveForArtifact = useCallback(async (artifactId: string, query: string | null) => {
     if (!query) return
@@ -153,13 +158,16 @@ export function App() {
     setLiveError(null)
     let generated: LiveScenario | null = null
     if (mode === 'live') {
-      if (!selectedModel) {
-        setLiveError('Start LM Studio, load a chat model, and enable its local server on port 1234.')
-        return
-      }
       setGenerating(true)
       try {
-        generated = await generateLiveScenario(prompt, selectedModel)
+        const available = await refreshLocalModels()
+        const availableIds = available.map(({ id }) => id)
+        const activeModel = selectedModel && availableIds.includes(selectedModel)
+          ? selectedModel
+          : preferredLocalModelId(available)
+        if (!activeModel) throw new Error('Load Nemotron or another chat model in LM Studio, then try again. Meridian will not cold-load a model.')
+        setSelectedModel(activeModel)
+        generated = await generateLiveScenario(prompt, activeModel)
       } catch (error) {
         setLiveError(error instanceof Error ? error.message : 'LM Studio could not generate the council response.')
         return
@@ -175,7 +183,7 @@ export function App() {
     setCitations({})
     setControlsOpen(false)
     dispatchDemo({ type: 'start' })
-  }, [mode, prompt, selectedModel])
+  }, [mode, prompt, refreshLocalModels, selectedModel])
 
   const resetDemo = useCallback(() => {
     setModel(createInitialModel())
@@ -232,9 +240,14 @@ export function App() {
     dispatchDemo({ type: 'explore' })
   }, [demo.phase])
 
+  const handleModeChange = useCallback((nextMode: 'curated' | 'live') => {
+    setMode(nextMode)
+    if (nextMode === 'live') void refreshLocalModels().catch(() => undefined)
+  }, [refreshLocalModels])
+
   if (demo.phase === 'intake') {
     if (generating) return <LiveReasoning prompt={prompt} model={selectedModel} />
-    return <Intake prompt={prompt} onPromptChange={setPrompt} onStart={() => void startDemo()} recording={recording} mode={recording ? 'curated' : mode} onModeChange={setMode} models={models} selectedModel={selectedModel} onModelChange={setSelectedModel} loadingModels={loadingModels} generating={generating} error={liveError} guided={guided} onGuidedChange={setGuided} />
+    return <Intake prompt={prompt} onPromptChange={setPrompt} onStart={() => void startDemo()} recording={recording} mode={recording ? 'curated' : mode} onModeChange={handleModeChange} models={models} selectedModel={selectedModel} onModelChange={setSelectedModel} loadingModels={loadingModels} generating={generating} error={liveError} guided={guided} onGuidedChange={setGuided} />
   }
 
   const activeCouncilPhase = councilPhase(demo.phase)

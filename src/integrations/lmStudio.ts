@@ -3,6 +3,7 @@ import type { ClaimArtifact, HiddenConsideration } from '../scenario/builtin'
 
 export interface LocalModel {
   id: string
+  loaded: boolean
 }
 
 export interface LiveScenario {
@@ -113,12 +114,35 @@ export function parseLiveScenario(raw: string, modelId: string): LiveScenario {
 }
 
 export async function listLocalModels(): Promise<LocalModel[]> {
-  const response = await fetch('/lmstudio/v1/models')
+  const response = await fetch('/lmstudio/api/v1/models')
   if (!response.ok) throw new Error('LM Studio local server is not responding on port 1234.')
-  const payload = await response.json() as { data?: Array<{ id?: string }> }
-  return (payload.data ?? [])
-    .filter((model): model is { id: string } => Boolean(model.id) && !model.id!.toLowerCase().includes('embed'))
-    .map(({ id }) => ({ id }))
+  const payload = await response.json() as {
+    models?: Array<{
+      type?: string
+      key?: string
+      display_name?: string
+      loaded_instances?: Array<{ id?: string }>
+    }>
+  }
+  const llms = (payload.models ?? []).filter(({ type }) => type === 'llm')
+  const loaded = llms.flatMap(({ loaded_instances }) => loaded_instances ?? [])
+    .map(({ id }) => id?.trim() ?? '')
+    .filter(Boolean)
+    .map((id) => ({ id, loaded: true }))
+  const nemotron = llms.find(({ key, display_name }) => /nemotron.*nano|nano.*nemotron/i.test(`${key ?? ''} ${display_name ?? ''}`))
+    ?? llms.find(({ key, display_name }) => /nemotron/i.test(`${key ?? ''} ${display_name ?? ''}`))
+  const nemotronIsLoaded = Boolean(nemotron?.loaded_instances?.some(({ id }) => id?.trim()))
+  if (nemotron?.key && !nemotronIsLoaded) loaded.push({ id: nemotron.key, loaded: false })
+  return [...new Map(loaded.map((model) => [model.id, model])).values()]
+}
+
+export function preferredLocalModelId(models: LocalModel[]): string {
+  return models.find(({ id, loaded }) => loaded && /nemotron.*nano|nano.*nemotron/i.test(id))?.id
+    ?? models.find(({ id, loaded }) => loaded && /nemotron/i.test(id))?.id
+    ?? models.find(({ loaded }) => loaded)?.id
+    ?? models.find(({ id }) => /nemotron.*nano|nano.*nemotron/i.test(id))?.id
+    ?? models.find(({ id }) => /nemotron/i.test(id))?.id
+    ?? ''
 }
 
 const SYSTEM_PROMPT = `You are Meridian, a local four-member decision council. Analyze one decision between Stable SWE, AI Startup, and Funded AI Master's. Be specific to the user's prompt, intellectually honest, and concise. Harbor advocates Stable SWE pragmatically. Aster advocates Startup ambitiously but honestly. Lumen advocates Research and quantifies bounded assumptions. Vesper identifies hidden tradeoffs. Do not invent exact external statistics. Return ONLY valid JSON with this exact shape:

@@ -79,12 +79,13 @@ test.describe('recording viewport', () => {
 test.describe('live local handoff', () => {
   test.use({ viewport: { width: 1440, height: 900 } })
 
-  test('moves off intake immediately and prefers the loaded qwopus 35B model', async ({ page }) => {
-    await page.route('**/lmstudio/v1/models', (route) => route.fulfill({
+  test('moves off intake immediately and prefers an already-loaded Nemotron model', async ({ page }) => {
+    await page.route('**/lmstudio/api/v1/models', (route) => route.fulfill({
       contentType: 'application/json',
-      body: JSON.stringify({ data: [
-        { id: 'qwen/qwen3.5-9b' },
-        { id: 'qwopus3.6-35b-a3b-v1-mlx-mixed_4_6' },
+      body: JSON.stringify({ models: [
+        { type: 'llm', key: 'downloaded/cold-model', loaded_instances: [] },
+        { type: 'llm', key: 'qwen/qwen3.5-9b', loaded_instances: [{ id: 'qwen-loaded' }] },
+        { type: 'llm', key: 'nvidia/nemotron-nano', loaded_instances: [{ id: 'nemotron-nano-loaded' }] },
       ] }),
     }))
     await page.route('**/lmstudio/v1/chat/completions', async (route) => {
@@ -94,7 +95,7 @@ test.describe('live local handoff', () => {
 
     await page.goto('/')
     await page.getByRole('button', { name: 'Live local' }).click()
-    await expect(page.getByLabel('LM Studio model')).toHaveValue('qwopus3.6-35b-a3b-v1-mlx-mixed_4_6')
+    await expect(page.getByLabel('LM Studio model')).toHaveValue('nemotron-nano-loaded')
     await page.getByRole('button', { name: 'Analyze my decision' }).click()
 
     await expect(page.getByText(/The council is thinking/i)).toBeVisible()

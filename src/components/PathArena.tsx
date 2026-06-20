@@ -9,6 +9,7 @@ import {
   type HiddenConsideration,
 } from '../scenario/builtin'
 import { AgentGlyph } from './AgentGlyph'
+import { DecisionAtlas } from './DecisionAtlas'
 import { LoadingEllipsis } from './LoadingEllipsis'
 
 const personaCopy: Record<AgentId, string> = {
@@ -81,17 +82,7 @@ export function PathArena({ phase, visibleClaimIds, visibleConsiderationIds, cla
         <path className="challenge-path" d="M 882 417 C 949 342, 936 221, 858 150" markerEnd="url(#challenge-arrow)" />
       </svg>
 
-      <div className={`decision-axis${isSynthesis ? ' is-synthesizing' : ''}`} aria-hidden="true">
-        <svg viewBox="0 0 240 240">
-          <circle cx="120" cy="120" r="86" />
-          <ellipse cx="120" cy="120" rx="86" ry="34" />
-          <ellipse cx="120" cy="120" rx="36" ry="86" />
-          <path d="M34 120h172M120 34v172" />
-          <path d="M120 18 130 108 222 120 130 132 120 222 110 132 18 120 110 108Z" className="decision-axis__needle" />
-          <circle cx="120" cy="120" r="7" className="decision-axis__center" />
-        </svg>
-        <span>{isSynthesis ? 'Synthesizing' : 'Decision meridian'}</span>
-      </div>
+      <DecisionAtlas active={isSynthesis} label={isSynthesis ? 'Synthesizing' : 'Decision meridian'} />
 
       {AGENTS.map((agent, index) => {
         const memo = memoByAgent[agent.id]
