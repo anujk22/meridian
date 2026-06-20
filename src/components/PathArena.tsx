@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import type { LedgerEntry } from '../domain/types'
+import type { DecisionResults, LedgerEntry } from '../domain/types'
 import type { RetrievalResult } from '../evidence/retrieval'
 import {
   AGENTS,
@@ -9,15 +9,25 @@ import {
   type HiddenConsideration,
 } from '../scenario/builtin'
 import { AgentGlyph } from './AgentGlyph'
-import { DecisionAtlas } from './DecisionAtlas'
+import { AtlasGlobe } from './AtlasGlobe'
+import { CitationChip } from './CitationChip'
 import { LoadingEllipsis } from './LoadingEllipsis'
 
 const personaCopy: Record<AgentId, string> = {
-  stableAdvocate: 'Grounded · Contextual',
-  startupAdvocate: 'Forward · Exploratory',
-  researchAdvocate: 'Precise · Illuminating',
-  skeptic: 'Contrarian · Challenging',
+  stableAdvocate: 'Protects the financial floor',
+  startupAdvocate: 'Tests asymmetric upside',
+  researchAdvocate: 'Maps durable AI depth',
+  skeptic: 'Challenges the story',
 }
+
+const routeByAgent: Record<AgentId, string> = {
+  stableAdvocate: 'M 300 118 C 410 132, 475 202, 545 250',
+  startupAdvocate: 'M 900 118 C 790 132, 725 202, 655 250',
+  researchAdvocate: 'M 300 442 C 410 430, 475 358, 545 310',
+  skeptic: 'M 900 442 C 790 430, 725 358, 655 310',
+}
+
+const shortPathNames = { stable: 'Stable', startup: 'Startup', research: 'Research' }
 
 interface PathArenaProps {
   phase: DemoPhase
@@ -28,11 +38,28 @@ interface PathArenaProps {
   citations: Record<string, RetrievalResult>
   activeAgent: AgentId | null
   latestLedgerEntry: LedgerEntry | null
+  results: DecisionResults
+  preparing?: boolean
+  preparationError?: string | null
+  onReturnToIntake?: () => void
 }
 
-type Memo = { title: string; body: string } | null
+type Memo = { id: string; title: string; body: string } | null
 
-export function PathArena({ phase, visibleClaimIds, visibleConsiderationIds, claims, hiddenConsiderations, activeAgent, latestLedgerEntry }: PathArenaProps) {
+export function PathArena({
+  phase,
+  visibleClaimIds,
+  visibleConsiderationIds,
+  claims,
+  hiddenConsiderations,
+  citations,
+  activeAgent,
+  latestLedgerEntry,
+  results,
+  preparing = false,
+  preparationError = null,
+  onReturnToIntake,
+}: PathArenaProps) {
   const latestClaim = (agentId: AgentId) => claims
     .filter((claim) => claim.agentId === agentId && visibleClaimIds.includes(claim.id))
     .at(-1) ?? null
@@ -49,61 +76,101 @@ export function PathArena({ phase, visibleClaimIds, visibleConsiderationIds, cla
 
   const speaker = AGENTS.find((agent) => agent.id === activeAgent) ?? AGENTS[0]
   const activeMemo = memoByAgent[speaker.id]
+  const isCrossExam = phase === 'skeptic'
   const isSynthesis = phase === 'analysis' || phase === 'recompute' || phase === 'explore'
+  const log = preparationError
+    ? ['Live council could not assemble.', preparationError]
+    : preparing
+      ? ['The four counselors are reading the career decision.', 'No claims will appear until the live scenario is ready.']
+      : latestLedgerEntry
+        ? [`${latestLedgerEntry.actor} updated the model.`, latestLedgerEntry.title, latestLedgerEntry.detail]
+        : activeMemo
+          ? [
+              speaker.id === 'skeptic' ? 'Vesper challenged a load-bearing assumption.' : `${speaker.name} delivered a perspective memo.`,
+              activeMemo.title,
+              speaker.id === 'skeptic' ? 'The council is revisiting scores and dependencies.' : 'The other perspectives are testing the claim.',
+            ]
+          : []
 
-  const log = latestLedgerEntry
-    ? [`${latestLedgerEntry.actor} updated the model.`, latestLedgerEntry.title, latestLedgerEntry.detail]
-    : activeMemo
-      ? [
-          speaker.id === 'skeptic' ? 'Vesper challenged a load-bearing assumption.' : `${speaker.name} delivered a perspective memo.`,
-          activeMemo.title,
-          speaker.id === 'skeptic' ? 'The council is revisiting scores and dependencies.' : 'The other perspectives are testing the claim.',
-        ]
-      : []
+  const routeIsActive = (agentId: AgentId) => {
+    if (preparing || preparationError) return false
+    if (isSynthesis) return true
+    if (isCrossExam) return agentId === 'startupAdvocate' || agentId === 'skeptic'
+    return activeAgent === agentId || Boolean(memoByAgent[agentId])
+  }
+
+  const agentIsEngaged = (agentId: AgentId) => {
+    if (preparing) return false
+    if (isSynthesis) return true
+    if (isCrossExam) return agentId === 'startupAdvocate' || agentId === 'skeptic'
+    return activeAgent === agentId
+  }
 
   return (
-    <section className={`arena council-map arena--${phase}`} aria-label="Decision council deliberation">
-      <span className="arena__coordinates">34.0522° N<br />118.2437° W</span>
+    <section className={`arena council-map arena--${phase}${preparing ? ' is-preparing' : ''}${preparationError ? ' has-preparation-error' : ''}`} aria-label="Decision council deliberation">
+      <div className="council-map__caption">
+        <strong>{preparing ? 'Council assembling' : isCrossExam ? 'Assumption under challenge' : isSynthesis ? 'Council synthesis' : 'Four perspectives, one path decision'}</strong>
+        <span>{preparing ? 'The atlas stays visible while the local model prepares the memos.' : 'Claims, challenges, evidence, and model changes converge here.'}</span>
+      </div>
 
       <svg className="council-map__orbits" viewBox="0 0 1200 560" preserveAspectRatio="none" aria-hidden="true">
-        <defs>
-          <marker id="orbit-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-            <path d="M 0 0 L 10 5 L 0 10 z" />
-          </marker>
-          <marker id="challenge-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-            <path d="M 0 0 L 10 5 L 0 10 z" />
-          </marker>
-        </defs>
-        <ellipse cx="600" cy="280" rx="360" ry="208" />
+        <ellipse cx="600" cy="280" rx="365" ry="218" className="orbit-main" />
         <ellipse cx="600" cy="280" rx="505" ry="310" className="orbit-faint" />
-        <path d="M 385 102 C 520 54, 680 54, 807 108" markerEnd="url(#orbit-arrow)" />
-        <path d="M 820 435 C 680 492, 518 492, 376 438" markerEnd="url(#orbit-arrow)" />
-        <path d="M 317 152 C 235 236, 235 344, 318 411" markerEnd="url(#orbit-arrow)" />
-        <path className="challenge-path" d="M 882 417 C 949 342, 936 221, 858 150" markerEnd="url(#challenge-arrow)" />
+        {AGENTS.map((agent) => (
+          <path
+            id={`beam-${agent.id}`}
+            key={agent.id}
+            className={`council-beam council-beam--${agent.id}${routeIsActive(agent.id) ? ' is-active' : ''}`}
+            d={routeByAgent[agent.id]}
+          />
+        ))}
+        <path className={`challenge-beam${isCrossExam ? ' is-active' : ''}`} d="M 874 414 C 1010 300, 1010 170, 890 126" />
+        {AGENTS.map((agent, index) => routeIsActive(agent.id) && (
+          <circle className={`beam-glint beam-glint--${agent.id}`} r="3" key={`glint-${agent.id}`}>
+            <animateMotion dur={`${1.65 + index * 0.12}s`} repeatCount="indefinite">
+              <mpath href={`#beam-${agent.id}`} />
+            </animateMotion>
+          </circle>
+        ))}
       </svg>
 
-      <DecisionAtlas active={isSynthesis} label={isSynthesis ? 'Synthesizing' : 'Decision meridian'} />
+      <div className="council-atlas">
+        <AtlasGlobe active={isSynthesis} preparing={preparing} results={results} />
+        <div className="atlas-path-shares" aria-label="Simulated scenario shares">
+          {results.options.map((option) => <span className={`atlas-path-share atlas-path-share--${option.id}`} key={option.id}>{shortPathNames[option.id]} <strong>{option.share}%</strong></span>)}
+        </div>
+      </div>
+
+      <div className="assumption-cloud" aria-label="Assumptions being tested">
+        <span className={isCrossExam ? 'is-challenged' : ''}>financial floor {isCrossExam ? '↓' : ''}</span>
+        <span>startup traction</span>
+        <span className={isSynthesis ? 'is-challenged' : ''}>funded master’s {isSynthesis ? '↑' : ''}</span>
+        <span>AI mentorship</span>
+        <span>role quality</span>
+        <span className={isCrossExam ? 'is-challenged' : ''}>ownership clarity</span>
+      </div>
 
       {AGENTS.map((agent, index) => {
         const memo = memoByAgent[agent.id]
-        const isActive = agent.id === activeAgent
-        const isChallenging = agent.id === 'skeptic' && phase === 'skeptic'
+        const isEngaged = agentIsEngaged(agent.id)
+        const isChallenging = agent.id === 'skeptic' && isCrossExam
         return (
           <motion.article
-            className={`council-agent council-agent--${agent.id}${isActive ? ' is-active' : ''}`}
+            className={`council-agent council-agent--${agent.id}${isEngaged ? ' is-active' : ''}`}
             key={agent.id}
             initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: isActive ? 1.035 : 1, y: isActive ? -3 : 0 }}
-            transition={{ duration: 0.32, delay: index * 0.045, ease: [0.16, 1, 0.3, 1] }}
+            animate={{ opacity: 1, scale: isEngaged ? 1.1 : 1, y: isEngaged ? -7 : 0 }}
+            transition={{ duration: 0.34, delay: index * 0.045, ease: [0.16, 1, 0.3, 1] }}
           >
-            <AgentGlyph agentId={agent.id} active={isActive} />
+            <span className="council-agent__halo" aria-hidden="true" />
+            <AgentGlyph agentId={agent.id} active={isEngaged} />
             <div className="council-agent__identity">
               <strong>{agent.name}</strong>
               <span>{personaCopy[agent.id]}</span>
             </div>
             <div className={`council-agent__status${isChallenging ? ' is-challenging' : ''}`}>
               <i />
-              {isChallenging ? 'Challenging' : isActive ? (isSynthesis ? 'Synthesizing' : 'Thinking') : memo ? 'Memo delivered' : <LoadingEllipsis label={`${agent.name} is thinking`} />}
+              {preparationError ? 'Council paused' : preparing ? 'Reading the decision' : isChallenging ? 'Challenging Aster' : isEngaged ? (isSynthesis ? 'Synthesizing' : 'Counseling') : memo ? 'Memo delivered' : <LoadingEllipsis label={`${agent.name} is weighing the decision`} />}
             </div>
           </motion.article>
         )
@@ -111,31 +178,39 @@ export function PathArena({ phase, visibleClaimIds, visibleConsiderationIds, cla
 
       {AGENTS.map((agent) => {
         const memo = memoByAgent[agent.id]
+        const evidence = memo ? citations[memo.id]?.chunks[0] : undefined
+        const active = agentIsEngaged(agent.id)
         return (
           <motion.aside
-            className={`agent-memo agent-memo--${agent.id}${memo ? ' is-delivered' : ''}`}
+            className={`agent-memo agent-memo--${agent.id}${memo ? ' is-delivered' : ''}${active ? ' is-active' : ''}`}
             key={`${agent.id}-memo`}
-            animate={{ opacity: memo ? 1 : 0.68, y: memo ? 0 : 3 }}
+            animate={{ opacity: memo ? 1 : preparing ? 0.46 : 0.68, y: memo ? 0 : 3 }}
             transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div><i aria-hidden="true">▤</i><strong>{agent.name} memo</strong></div>
-            {memo ? <p>{memo.body}</p> : <p className="agent-memo__loading"><LoadingEllipsis label={`${agent.name} memo is loading`} /></p>}
+            <div className="agent-memo__title"><i aria-hidden="true" /><strong>{agent.name} memo</strong><span>{agent.id === 'skeptic' ? 'Challenge' : 'Counsel'}</span></div>
+            {memo ? (
+              <>
+                <h3>{memo.title}</h3>
+                <p>{memo.body}</p>
+                {evidence && <CitationChip chunk={evidence} mode={citations[memo.id].mode} />}
+              </>
+            ) : <p className="agent-memo__loading"><LoadingEllipsis label={`${agent.name} memo is loading`} /></p>}
           </motion.aside>
         )
       })}
 
       <AnimatePresence>
-        {phase === 'skeptic' && (
+        {isCrossExam && (
           <motion.p className="challenge-note" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-            Vesper challenged<br />Aster’s runway assumption
+            Vesper is testing Aster’s<br />runway and ownership claims
           </motion.p>
         )}
       </AnimatePresence>
 
       <motion.aside className="cross-exam-log" layout aria-live="polite">
-        <div><i /> <strong>{isSynthesis ? 'Live synthesis' : 'Live cross-examination'}</strong></div>
+        <div><i /> <strong>{preparing ? 'Preparing live council' : isSynthesis ? 'Live synthesis' : 'Council signal'}</strong></div>
         {log.length > 0 ? log.map((line) => <p key={line}>{line}</p>) : <p className="cross-exam-log__loading"><LoadingEllipsis label="Council activity is loading" /></p>}
-        <small>Last updated&nbsp; · &nbsp;Just now</small>
+        {preparationError && onReturnToIntake ? <button type="button" onClick={onReturnToIntake}>Return to decision composer</button> : <small>{preparing ? 'Waiting for local generation' : 'Updated just now'}</small>}
       </motion.aside>
     </section>
   )

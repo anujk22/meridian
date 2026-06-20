@@ -1,6 +1,11 @@
 import { motion, useReducedMotion } from 'motion/react'
 import type { DecisionResults, OptionId } from '../domain/types'
+import type { RetrievalResult } from '../evidence/retrieval'
+import { AGENTS } from '../scenario/builtin'
+import { AgentGlyph } from './AgentGlyph'
+import { AtlasGlobe } from './AtlasGlobe'
 import { BrandMark } from './BrandMark'
+import { CitationChip } from './CitationChip'
 
 const verdictCopy: Record<OptionId, {
   condition: string
@@ -32,10 +37,11 @@ const verdictCopy: Record<OptionId, {
   },
 }
 
-export function Verdict({ results, onBack, onRestart }: { results: DecisionResults; onBack: () => void; onRestart: () => void }) {
+export function Verdict({ results, citations, onBack, onRestart }: { results: DecisionResults; citations: Record<string, RetrievalResult>; onBack: () => void; onRestart: () => void }) {
   const reducedMotion = useReducedMotion()
   const leader = results.options.find((option) => option.id === results.leaderId)!
   const copy = verdictCopy[results.leaderId]
+  const evidence = Array.from(new Map(Object.values(citations).flatMap((result) => result.chunks).map((chunk) => [chunk.id, chunk])).values()).slice(0, 2)
   return (
     <motion.main
       className="verdict"
@@ -49,6 +55,7 @@ export function Verdict({ results, onBack, onRestart }: { results: DecisionResul
       </header>
       <div className="verdict__body">
         <aside className="verdict__index">
+          <AtlasGlobe compact active results={results} className="verdict__atlas" />
           <span>Your decision meridian</span>
           <strong>{leader.label}</strong>
           <div className="verdict__share">{leader.share}<small>%</small></div>
@@ -63,6 +70,16 @@ export function Verdict({ results, onBack, onRestart }: { results: DecisionResul
             <section><span>Biggest risk</span><p>{copy.risk}</p></section>
             <section><span>What would change it</span><p>{copy.changes}</p></section>
           </div>
+          <section className="verdict__sensitivity">
+            <span>Strongest sensitivity</span>
+            <strong>{results.sensitivity.label}</strong>
+            <p>This is the current assumption most capable of moving the recommendation.</p>
+          </section>
+          <section className="verdict__council">
+            <span>Council recap</span>
+            <div>{AGENTS.map((agent) => <span key={agent.id}><AgentGlyph agentId={agent.id} /><strong>{agent.name}</strong></span>)}</div>
+          </section>
+          {evidence.length > 0 && <section className="verdict__evidence"><span>Evidence carried forward</span><div>{evidence.map((chunk) => <CitationChip chunk={chunk} key={chunk.id} />)}</div></section>}
           <section className="next-actions">
             <span>Next three actions</span>
             <ol>{copy.actions.map((action) => <li key={action}>{action}</li>)}</ol>

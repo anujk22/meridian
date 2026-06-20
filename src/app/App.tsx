@@ -19,7 +19,6 @@ import { useDemoTimeline } from '../scenario/useDemoTimeline'
 import { BrandMark } from '../components/BrandMark'
 import { ControlDeck } from '../components/ControlDeck'
 import { Intake } from '../components/Intake'
-import { LiveReasoning } from '../components/LiveReasoning'
 import { OutcomePanel } from '../components/OutcomePanel'
 import { PathArena } from '../components/PathArena'
 import { Verdict } from '../components/Verdict'
@@ -76,6 +75,7 @@ export function App() {
   const [loadingModels, setLoadingModels] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [liveError, setLiveError] = useState<string | null>(null)
+  const [liveEntryState, setLiveEntryState] = useState<'idle' | 'preparing' | 'error'>('idle')
   const [liveScenario, setLiveScenario] = useState<LiveScenario | null>(null)
   const [guided, setGuided] = useState(true)
   const [controlsOpen, setControlsOpen] = useState(false)
@@ -158,6 +158,7 @@ export function App() {
     setLiveError(null)
     let generated: LiveScenario | null = null
     if (mode === 'live') {
+      setLiveEntryState('preparing')
       setGenerating(true)
       try {
         const available = await refreshLocalModels()
@@ -170,6 +171,7 @@ export function App() {
         generated = await generateLiveScenario(prompt, activeModel)
       } catch (error) {
         setLiveError(error instanceof Error ? error.message : 'LM Studio could not generate the council response.')
+        setLiveEntryState('error')
         return
       } finally {
         setGenerating(false)
@@ -182,6 +184,7 @@ export function App() {
     setModel(createInitialModel())
     setCitations({})
     setControlsOpen(false)
+    setLiveEntryState('idle')
     dispatchDemo({ type: 'start' })
   }, [mode, prompt, refreshLocalModels, selectedModel])
 
@@ -191,6 +194,8 @@ export function App() {
     mutationCursorRef.current = 0
     presentedBriefRef.current = false
     setControlsOpen(false)
+    setLiveError(null)
+    setLiveEntryState('idle')
     dispatchDemo({ type: 'reset' })
   }, [])
 
@@ -245,25 +250,27 @@ export function App() {
     if (nextMode === 'live') void refreshLocalModels().catch(() => undefined)
   }, [refreshLocalModels])
 
-  if (demo.phase === 'intake') {
-    if (generating) return <LiveReasoning prompt={prompt} model={selectedModel} />
+  const showingLiveEntry = demo.phase === 'intake' && liveEntryState !== 'idle'
+
+  if (demo.phase === 'intake' && !showingLiveEntry) {
     return <Intake prompt={prompt} onPromptChange={setPrompt} onStart={() => void startDemo()} recording={recording} mode={recording ? 'curated' : mode} onModeChange={handleModeChange} models={models} selectedModel={selectedModel} onModelChange={setSelectedModel} loadingModels={loadingModels} generating={generating} error={liveError} guided={guided} onGuidedChange={setGuided} />
   }
 
-  const activeCouncilPhase = councilPhase(demo.phase)
+  const displayedPhase = showingLiveEntry ? 'decomposition' : demo.phase
+  const activeCouncilPhase = showingLiveEntry ? 1 : councilPhase(displayedPhase)
 
   return (
-    <div className={`simulation-shell simulation-shell--${demo.phase}${controlsOpen ? ' has-controls' : ''}${recording ? ' is-recording' : ''}`}>
+    <div className={`simulation-shell simulation-shell--${displayedPhase}${controlsOpen ? ' has-controls' : ''}${recording ? ' is-recording' : ''}${showingLiveEntry ? ' is-live-entry' : ''}`}>
       <div className="observatory-background" aria-hidden="true"><span /><i /><b /></div>
       <header className="instrument-rail">
         <BrandMark compact />
         <div className="phase-readout">
-          <span><i /> Council deliberation</span>
-          <small>{phaseLabels[demo.phase]} · Phase {activeCouncilPhase} of 3</small>
+          <span><i /> {showingLiveEntry ? 'Live council preparation' : 'Council deliberation'}</span>
+          <small>{showingLiveEntry ? (liveEntryState === 'error' ? 'Council needs attention' : 'Reading the career decision') : `${phaseLabels[displayedPhase]} · Phase ${activeCouncilPhase} of 3`}</small>
         </div>
         <div className="instrument-rail__status">
           <span className="privacy-badge"><i /> Local & private</span>
-          {!recording && <span className="mode-badge">{liveScenario ? `Live · ${liveScenario.modelId}` : 'Curated demo'}</span>}
+          {!recording && <span className="mode-badge">{showingLiveEntry ? `Live · ${selectedModel}` : liveScenario ? `Live · ${liveScenario.modelId}` : 'Curated demo'}</span>}
           {!recording && demo.running && (
             <button className="icon-button" type="button" onClick={() => dispatchDemo({ type: 'pause', value: !demo.paused })}>
               {demo.paused ? 'Resume' : 'Pause'}
@@ -290,7 +297,7 @@ export function App() {
           })}
         </nav>
         <PathArena
-          phase={demo.phase}
+          phase={displayedPhase}
           visibleClaimIds={demo.visibleClaimIds}
           visibleConsiderationIds={demo.visibleConsiderationIds}
           citations={citations}
@@ -298,8 +305,20 @@ export function App() {
           hiddenConsiderations={scenario.hiddenConsiderations}
           activeAgent={demo.activeAgent}
           latestLedgerEntry={demo.ledger.at(-1) ?? null}
+          results={results}
+          preparing={liveEntryState === 'preparing'}
+          preparationError={liveEntryState === 'error' ? liveError : null}
+          onReturnToIntake={() => {
+            setLiveEntryState('idle')
+            setLiveError(null)
+          }}
         />
-        <OutcomePanel results={results} focused={demo.focus === 'axis'} controlsOpen={controlsOpen} onTestAssumptions={handleTestAssumptions} />
+        {showingLiveEntry ? (
+          <div className="preparing-strip" role="status">
+            <span><i /> {liveEntryState === 'error' ? 'Live generation stopped' : 'The council is assembling around your prompt'}</span>
+            <p>{liveEntryState === 'error' ? 'Return to the composer to check LM Studio and try again.' : 'Ambient motion only. The deliberation begins when the live scenario is ready.'}</p>
+          </div>
+        ) : <OutcomePanel results={results} focused={demo.focus === 'axis'} controlsOpen={controlsOpen} onTestAssumptions={handleTestAssumptions} />}
       </div>
 
       <AnimatePresence>
@@ -319,6 +338,7 @@ export function App() {
         {demo.phase === 'verdict' && (
           <Verdict
             results={results}
+            citations={citations}
             onBack={() => { setControlsOpen(true); dispatchDemo({ type: 'explore' }) }}
             onRestart={resetDemo}
           />
