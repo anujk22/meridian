@@ -66,30 +66,36 @@ export function Verdict({ results, citations, onBack, onRestart }: { results: De
           <p className="verdict__date">Meridian brief · {new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(new Date())}</p>
           <h1>{copy.condition}</h1>
           <p className="verdict__why">{copy.why}</p>
-          <div className="verdict__columns">
-            <section><span>Biggest risk</span><p>{copy.risk}</p></section>
-            <section><span>What would change it</span><p>{copy.changes}</p></section>
+          <div className="verdict__logic">
+            <div className="verdict__columns">
+              <section><span>Biggest risk</span><p>{copy.risk}</p></section>
+              <section><span>What would change it</span><p>{copy.changes}</p></section>
+            </div>
+            <section className="verdict__sensitivity">
+              <span>Strongest sensitivity</span>
+              <strong>{results.sensitivity.label}</strong>
+              <p>This is the current assumption most capable of moving the recommendation.</p>
+            </section>
           </div>
-          <section className="verdict__sensitivity">
-            <span>Strongest sensitivity</span>
-            <strong>{results.sensitivity.label}</strong>
-            <p>This is the current assumption most capable of moving the recommendation.</p>
-          </section>
-          <section className="verdict__council">
-            <span>Council recap</span>
-            <div>{AGENTS.map((agent) => <span key={agent.id}><AgentGlyph agentId={agent.id} /><strong>{agent.name}</strong></span>)}</div>
-          </section>
-          {evidence.length > 0 && <section className="verdict__evidence"><span>Evidence carried forward</span><div>{evidence.map((chunk) => <CitationChip chunk={chunk} key={chunk.id} />)}</div></section>}
+          <div className="verdict__supporting">
+            <section className="verdict__council">
+              <span>Council recap</span>
+              <div>{AGENTS.map((agent) => <span key={agent.id}><AgentGlyph agentId={agent.id} /><strong>{agent.name}</strong></span>)}</div>
+            </section>
+            {evidence.length > 0 && <section className="verdict__evidence"><span>Evidence carried forward</span><div>{evidence.map((chunk) => <CitationChip chunk={chunk} key={chunk.id} />)}</div></section>}
+          </div>
           <section className="next-actions">
             <span>Next three actions</span>
             <ol>{copy.actions.map((action) => <li key={action}>{action}</li>)}</ol>
           </section>
-          <p className="verdict__limitation">
-            Meridian models assumptions, not the future. Its recommendation is only as useful as the inputs, which is why it exposes the assumption most worth verifying: <strong>{results.sensitivity.label.toLowerCase()}</strong>.
-          </p>
-          <div className="verdict__actions">
-            <button className="ghost-button" type="button" onClick={onBack}>Adjust assumptions</button>
-            <button className="primary-button" type="button" onClick={onRestart}>Replay deliberation</button>
+          <div className="verdict__footer">
+            <p className="verdict__limitation">
+              Meridian models assumptions, not the future. Its recommendation is only as useful as the inputs, which is why it exposes the assumption most worth verifying: <strong>{results.sensitivity.label.toLowerCase()}</strong>.
+            </p>
+            <div className="verdict__actions">
+              <button className="ghost-button" type="button" onClick={onBack}>Adjust assumptions</button>
+              <button className="primary-button" type="button" onClick={onRestart}>Replay deliberation</button>
+            </div>
           </div>
         </article>
       </div>
