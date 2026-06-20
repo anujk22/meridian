@@ -207,7 +207,7 @@ export function PathArena({
         )}
       </AnimatePresence>
 
-      <motion.aside className="cross-exam-log" layout aria-live="polite">
+      <motion.aside className="cross-exam-log" aria-live="polite">
         <div><i /> <strong>{preparing ? 'Preparing Live Council' : isSynthesis ? 'Live Synthesis' : 'Council Signal'}</strong></div>
         {log.length > 0 ? log.map((line) => <p key={line}>{line}</p>) : <p className="cross-exam-log__loading"><LoadingEllipsis label="Council activity is loading" /></p>}
         {preparationError && onReturnToIntake ? <button type="button" onClick={onReturnToIntake}>Return to decision composer</button> : <small>{preparing ? 'Waiting for local generation' : 'Updated just now'}</small>}

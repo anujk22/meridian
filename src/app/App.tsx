@@ -269,8 +269,6 @@ export function App() {
           <small>{showingLiveEntry ? (liveEntryState === 'error' ? 'Council Needs Attention' : 'Reading the Career Decision') : `${phaseLabels[displayedPhase]} · Phase ${activeCouncilPhase} of 3`}</small>
         </div>
         <div className="instrument-rail__status">
-          <span className="privacy-badge"><i /> Local & private</span>
-          {!recording && <span className="mode-badge">{showingLiveEntry ? `Live · ${selectedModel}` : liveScenario ? `Live · ${liveScenario.modelId}` : 'Curated demo'}</span>}
           {!recording && demo.running && (
             <button className="icon-button" type="button" onClick={() => dispatchDemo({ type: 'pause', value: !demo.paused })}>
               {demo.paused ? 'Resume' : 'Pause'}
