@@ -277,6 +277,8 @@ export function App() {
           hiddenConsiderations={scenario.hiddenConsiderations}
           contextChips={scenario.contextChips}
           goalChips={scenario.goalChips}
+          activeAgent={demo.activeAgent}
+          latestLedgerEntry={demo.ledger.at(-1) ?? null}
         />
         <AssumptionLedger entries={demo.ledger} focused={demo.focus === 'ledger'} />
         <OutcomePanel results={results} focused={demo.focus === 'axis'} />

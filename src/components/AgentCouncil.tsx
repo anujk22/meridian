@@ -6,6 +6,15 @@ interface AgentCouncilProps {
   challengedAgent: AgentId | null
 }
 
+const personas = {
+  meridian: 'Synthesizer',
+  stableAdvocate: 'Pragmatist',
+  startupAdvocate: 'Builder',
+  researchAdvocate: 'Scholar',
+  skeptic: 'Contrarian',
+  analyst: 'Quantifier',
+}
+
 export function AgentCouncil({ activeAgent, challengedAgent }: AgentCouncilProps) {
   return (
     <aside className="council" aria-label="Agent council">
@@ -28,9 +37,9 @@ export function AgentCouncil({ activeAgent, challengedAgent }: AgentCouncilProps
               <div className="agent__seal" aria-hidden="true">
                 <span>{agent.symbol}</span>
               </div>
-              <div className="agent__identity">
+              <div className="agent__identity" title={agent.role}>
                 <strong>{agent.name}</strong>
-                <span>{agent.role}</span>
+                <span>{personas[agent.id]}</span>
               </div>
               <span className="agent__state"><i />{isActive ? 'Speaking' : isChallenged ? 'Challenged' : 'Listening'}</span>
             </motion.div>

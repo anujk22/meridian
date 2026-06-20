@@ -48,7 +48,7 @@ export function Verdict({ results, onBack, onRestart }: { results: DecisionResul
       </header>
       <div className="verdict__body">
         <aside className="verdict__index">
-          <span>True north</span>
+          <span>Your decision meridian</span>
           <strong>{leader.label}</strong>
           <div className="verdict__share">{leader.share}<small>%</small></div>
           <p>of simulated scenarios under current assumptions</p>

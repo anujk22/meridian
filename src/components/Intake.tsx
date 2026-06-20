@@ -45,6 +45,7 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
           <p className="intake-lede">
             Compare the strongest case for every path, uncover hidden tradeoffs, and see exactly what could change the answer.
           </p>
+          <p className="intake-definition">A meridian is a line of reference. This helps you find yours.</p>
         </motion.div>
 
         <motion.div
