@@ -18,8 +18,8 @@ test.describe('recording path', () => {
     })
 
     await page.goto('/?recording=1&speed=20')
-    await expect(page.getByRole('heading', { name: /Find what your decision really depends on/i })).toBeVisible()
-    await page.getByRole('button', { name: 'Analyze my decision' }).click()
+    await expect(page.getByRole('heading', { name: /Run the decision before you live it/i })).toBeVisible()
+    await page.getByRole('button', { name: 'Run the council' }).click()
     await expect(page.getByRole('heading', { name: /Choose funded AI research/i })).toBeVisible({ timeout: 5_000 })
     await page.getByRole('button', { name: 'Adjust assumptions' }).click()
     await expect(page.locator('.leader-readout strong')).toHaveText('Research')
@@ -34,7 +34,7 @@ test.describe('recording path', () => {
 
   test('lets all three paths lead through the shared controls', async ({ page }) => {
     await page.goto('/?recording=1&speed=20')
-    await page.getByRole('button', { name: 'Analyze my decision' }).click()
+    await page.getByRole('button', { name: 'Run the council' }).click()
     await expect(page.getByRole('heading', { name: /Choose funded AI research/i })).toBeVisible({ timeout: 5_000 })
     await page.getByRole('button', { name: 'Adjust assumptions' }).click()
 
@@ -60,7 +60,7 @@ test.describe('recording viewport', () => {
 
   test('fits the short recording crop and honors reduced motion', async ({ page }) => {
     await page.goto('/?recording=1&speed=20')
-    await page.getByRole('button', { name: 'Analyze my decision' }).click()
+    await page.getByRole('button', { name: 'Run the council' }).click()
     await expect(page.getByRole('heading', { name: /Choose funded AI research/i })).toBeVisible({ timeout: 5_000 })
     await page.getByRole('button', { name: 'Adjust assumptions' }).click()
 
@@ -96,10 +96,10 @@ test.describe('live local handoff', () => {
     await page.goto('/')
     await page.getByRole('button', { name: 'Live local' }).click()
     await expect(page.getByLabel('LM Studio model')).toHaveValue('nemotron-nano-loaded')
-    await page.getByRole('button', { name: 'Analyze my decision' }).click()
+    await page.getByRole('button', { name: 'Run the council' }).click()
 
-    await expect(page.getByText(/The council is thinking/i)).toBeVisible()
-    await expect(page.getByText(/move into the deliberation automatically/i)).toBeVisible()
+    await expect(page.getByText(/Structuring local council/i)).toBeVisible()
+    await expect(page.getByText(/model graph initializes/i)).toBeVisible()
     await expect(page.getByRole('textbox')).toHaveCount(0)
   })
 })

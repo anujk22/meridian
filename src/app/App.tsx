@@ -18,10 +18,8 @@ import { demoReducer, initialDemoState } from '../scenario/reducer'
 import { useDemoTimeline } from '../scenario/useDemoTimeline'
 import { BrandMark } from '../components/BrandMark'
 import { ControlDeck } from '../components/ControlDeck'
+import { DeliberationArena } from '../components/DeliberationArena'
 import { Intake } from '../components/Intake'
-import { LiveReasoning } from '../components/LiveReasoning'
-import { OutcomePanel } from '../components/OutcomePanel'
-import { PathArena } from '../components/PathArena'
 import { Verdict } from '../components/Verdict'
 
 const phaseLabels = {
@@ -156,9 +154,18 @@ export function App() {
 
   const startDemo = useCallback(async () => {
     setLiveError(null)
-    let generated: LiveScenario | null = null
+    runtimeScenarioRef.current = null
+    mutationCursorRef.current = 0
+    presentedBriefRef.current = false
+    setLiveScenario(null)
+    setModel(createInitialModel())
+    setCitations({})
+    setControlsOpen(false)
+    dispatchDemo({ type: 'start' })
+
     if (mode === 'live') {
       setGenerating(true)
+      dispatchDemo({ type: 'pause', value: true })
       try {
         const available = await refreshLocalModels()
         const availableIds = available.map(({ id }) => id)
@@ -167,22 +174,16 @@ export function App() {
           : preferredLocalModelId(available)
         if (!activeModel) throw new Error('Load Nemotron or another chat model in LM Studio, then try again. Meridian will not cold-load a model.')
         setSelectedModel(activeModel)
-        generated = await generateLiveScenario(prompt, activeModel)
+        const generated = await generateLiveScenario(prompt, activeModel)
+        runtimeScenarioRef.current = generated
+        setLiveScenario(generated)
       } catch (error) {
         setLiveError(error instanceof Error ? error.message : 'LM Studio could not generate the council response.')
-        return
       } finally {
         setGenerating(false)
+        dispatchDemo({ type: 'pause', value: false })
       }
     }
-    runtimeScenarioRef.current = generated
-    mutationCursorRef.current = 0
-    presentedBriefRef.current = false
-    setLiveScenario(generated)
-    setModel(createInitialModel())
-    setCitations({})
-    setControlsOpen(false)
-    dispatchDemo({ type: 'start' })
   }, [mode, prompt, refreshLocalModels, selectedModel])
 
   const resetDemo = useCallback(() => {
@@ -246,7 +247,6 @@ export function App() {
   }, [refreshLocalModels])
 
   if (demo.phase === 'intake') {
-    if (generating) return <LiveReasoning prompt={prompt} model={selectedModel} />
     return <Intake prompt={prompt} onPromptChange={setPrompt} onStart={() => void startDemo()} recording={recording} mode={recording ? 'curated' : mode} onModeChange={handleModeChange} models={models} selectedModel={selectedModel} onModelChange={setSelectedModel} loadingModels={loadingModels} generating={generating} error={liveError} guided={guided} onGuidedChange={setGuided} />
   }
 
@@ -262,7 +262,7 @@ export function App() {
           <small>{phaseLabels[demo.phase]} · Phase {activeCouncilPhase} of 3</small>
         </div>
         <div className="instrument-rail__status">
-          <span className="privacy-badge"><i /> Local & private</span>
+          <span className="privacy-badge"><i /> Engine online</span>
           {!recording && <span className="mode-badge">{liveScenario ? `Live · ${liveScenario.modelId}` : 'Curated demo'}</span>}
           {!recording && demo.running && (
             <button className="icon-button" type="button" onClick={() => dispatchDemo({ type: 'pause', value: !demo.paused })}>
@@ -273,34 +273,24 @@ export function App() {
         </div>
       </header>
 
-      <div className="stage-grid">
-        <nav className="phase-stepper" aria-label="Deliberation progress">
-          {[
-            { number: 1, label: 'Independent memos' },
-            { number: 2, label: 'Cross-examination' },
-            { number: 3, label: 'Synthesis' },
-          ].map((step) => {
-            const status = step.number < activeCouncilPhase ? 'complete' : step.number === activeCouncilPhase ? 'active' : 'queued'
-            return (
-              <div className={`phase-step is-${status}`} key={step.number}>
-                <span>{status === 'complete' ? '✓' : step.number}</span>
-                <div><strong>{step.label}</strong><small>{status === 'complete' ? 'Completed' : status === 'active' ? 'Active' : 'Queued'}</small></div>
-              </div>
-            )
-          })}
-        </nav>
-        <PathArena
-          phase={demo.phase}
-          visibleClaimIds={demo.visibleClaimIds}
-          visibleConsiderationIds={demo.visibleConsiderationIds}
-          citations={citations}
-          claims={scenario.claims}
-          hiddenConsiderations={scenario.hiddenConsiderations}
-          activeAgent={demo.activeAgent}
-          latestLedgerEntry={demo.ledger.at(-1) ?? null}
-        />
-        <OutcomePanel results={results} focused={demo.focus === 'axis'} controlsOpen={controlsOpen} onTestAssumptions={handleTestAssumptions} />
-      </div>
+      <DeliberationArena
+        phase={demo.phase}
+        activeCouncilPhase={activeCouncilPhase}
+        model={model}
+        results={results}
+        activeAgent={demo.activeAgent}
+        claims={scenario.claims}
+        visibleClaimIds={demo.visibleClaimIds}
+        hiddenConsiderations={scenario.hiddenConsiderations}
+        visibleConsiderationIds={demo.visibleConsiderationIds}
+        citations={citations}
+        ledger={demo.ledger}
+        focus={demo.focus}
+        controlsOpen={controlsOpen}
+        onTestAssumptions={handleTestAssumptions}
+        generating={generating}
+        liveError={liveError}
+      />
 
       <AnimatePresence>
         {demo.phase === 'explore' && controlsOpen && (
@@ -319,6 +309,8 @@ export function App() {
         {demo.phase === 'verdict' && (
           <Verdict
             results={results}
+            evidenceCount={Object.values(citations).reduce((total, result) => total + result.chunks.length, 0)}
+            ledgerEntries={demo.ledger}
             onBack={() => { setControlsOpen(true); dispatchDemo({ type: 'explore' }) }}
             onRestart={resetDemo}
           />

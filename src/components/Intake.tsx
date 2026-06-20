@@ -30,7 +30,7 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
 
       <header className="intake-header">
         <BrandMark />
-        <div className="local-status"><span /> Private · on this machine</div>
+        <div className="local-status"><span /> Decision engine online <small>· local model ready</small></div>
       </header>
 
       <section className="intake-content">
@@ -40,12 +40,14 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p className="intake-kicker">Decision intelligence, on your machine</p>
-          <h1>Find what your decision <em>really depends on.</em></h1>
+          <p className="intake-kicker">A computational council for consequential choices</p>
+          <h1>Run the decision <em>before you live it.</em></h1>
           <p className="intake-lede">
-            Compare the strongest case for every path, uncover hidden tradeoffs, and see exactly what could change the answer.
+            Meridian turns a high-stakes choice into a live council. Agents argue, evidence attaches to claims, simulations shift, and the system shows which assumption could change the answer.
           </p>
-          <p className="intake-definition">A meridian is a line of reference. This helps you find yours.</p>
+          <div className="intake-architecture" aria-label="Decision engine architecture">
+            <span><b>04</b> agents</span><span><b>4,800</b> simulations</span><span><b>05</b> weighted factors</span><span><b>01</b> sensitivity lever</span>
+          </div>
         </motion.div>
 
         <motion.div
@@ -54,7 +56,7 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.7, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
         >
-          <label htmlFor="decision-prompt">State a decision you’re weighing</label>
+          <div className="composer-heading"><label htmlFor="decision-prompt">Decision composer</label><span>triangular sampling · deterministic seed</span></div>
           <textarea
             id="decision-prompt"
             value={prompt}
@@ -86,20 +88,28 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
           {error && <p className="intake-error" role="alert">{error}</p>}
           <div className="intake-instrument__footer">
             <button className="example-chip" type="button" onClick={() => onPromptChange(BUILTIN_PROMPT)}>
-              Job · Startup · AI master’s
+              Example: Job · startup · AI master’s
             </button>
             <span className="character-count">{prompt.length}/520</span>
             <button className="primary-button" type="button" onClick={onStart} disabled={!prompt.trim() || generating || (mode === 'live' && !selectedModel)}>
-              {generating ? 'Preparing analysis…' : 'Analyze my decision'}
+              {generating ? 'Starting council…' : 'Run the council'}
               <span aria-hidden="true">↗</span>
             </button>
+          </div>
+          <div className="composer-preview" aria-hidden="true">
+            <span className="preview-node preview-node--decision">Decision</span>
+            <span className="preview-node preview-node--stable">Stable</span>
+            <span className="preview-node preview-node--startup">Startup</span>
+            <span className="preview-node preview-node--research">Research</span>
+            <i /><i /><i />
+            <small>agents · simulations · evidence · sensitivity</small>
           </div>
         </motion.div>
       </section>
 
       {!recording && (
         <div className="intake-note">
-          Live local keeps your prompt and analysis on this machine.
+          Local-first by default. The visible architecture is the product.
         </div>
       )}
     </main>

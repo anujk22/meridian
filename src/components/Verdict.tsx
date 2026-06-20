@@ -1,5 +1,5 @@
 import { motion, useReducedMotion } from 'motion/react'
-import type { DecisionResults, OptionId } from '../domain/types'
+import type { DecisionResults, LedgerEntry, OptionId } from '../domain/types'
 import { BrandMark } from './BrandMark'
 
 const verdictCopy: Record<OptionId, {
@@ -32,7 +32,7 @@ const verdictCopy: Record<OptionId, {
   },
 }
 
-export function Verdict({ results, onBack, onRestart }: { results: DecisionResults; onBack: () => void; onRestart: () => void }) {
+export function Verdict({ results, evidenceCount, ledgerEntries, onBack, onRestart }: { results: DecisionResults; evidenceCount: number; ledgerEntries: LedgerEntry[]; onBack: () => void; onRestart: () => void }) {
   const reducedMotion = useReducedMotion()
   const leader = results.options.find((option) => option.id === results.leaderId)!
   const copy = verdictCopy[results.leaderId]
@@ -45,15 +45,21 @@ export function Verdict({ results, onBack, onRestart }: { results: DecisionResul
     >
       <header className="verdict__header">
         <BrandMark />
-        <div><span>Decision brief</span><small>Conditional · assumption-based · local</small></div>
+        <div><span>Decision brief</span><small>Conditional · assumption-based · generated from the visible model</small></div>
       </header>
       <div className="verdict__body">
         <aside className="verdict__index">
-          <span>Your decision meridian</span>
+          <span>Current decision meridian</span>
           <strong>{leader.label}</strong>
           <div className="verdict__share">{leader.share}<small>%</small></div>
           <p>of simulated scenarios under current assumptions</p>
           <div className="verdict__ranges"><span>Floor {Math.round(leader.floor)}</span><span>Ceiling {Math.round(leader.ceiling)}</span></div>
+          <div className="verdict-distribution" aria-label="Simulation distribution by path">
+            {results.options.map((option) => (
+              <div key={option.id}><span>{option.label.replace('Stable SWE Job', 'Stable').replace('Early AI Startup', 'Startup').replace("Funded AI Master's", 'Research')}</span><i><b style={{ width: `${option.share}%` }} /></i><strong>{option.share}%</strong></div>
+            ))}
+          </div>
+          <div className="verdict-sample"><b>{results.sampleCount.toLocaleString()}</b><span>seeded triangular samples</span></div>
         </aside>
         <article className="verdict__brief">
           <p className="verdict__date">Meridian brief · {new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(new Date())}</p>
@@ -63,12 +69,17 @@ export function Verdict({ results, onBack, onRestart }: { results: DecisionResul
             <section><span>Biggest risk</span><p>{copy.risk}</p></section>
             <section><span>What would change it</span><p>{copy.changes}</p></section>
           </div>
+          <section className="verdict-proof">
+            <div><span>Strongest sensitivity</span><strong>{results.sensitivity.label}</strong><small>{results.sensitivity.impact.toFixed(1)} point modeled impact</small></div>
+            <div><span>Council signal</span><strong>Conditional alignment</strong><small>3 advocates + 1 red-team memo incorporated</small></div>
+            <div><span>Audit coverage</span><strong>{evidenceCount} evidence matches</strong><small>{ledgerEntries.length} assumption mutations recorded</small></div>
+          </section>
           <section className="next-actions">
             <span>Next three actions</span>
             <ol>{copy.actions.map((action) => <li key={action}>{action}</li>)}</ol>
           </section>
           <p className="verdict__limitation">
-            Meridian models assumptions, not the future. Its recommendation is only as useful as the inputs, which is why it exposes the assumption most worth verifying: <strong>{results.sensitivity.label.toLowerCase()}</strong>.
+            Meridian models assumptions, not the future. The next fact worth verifying is <strong>{results.sensitivity.label.toLowerCase()}</strong>, because it creates the strongest modeled movement in the current recommendation.
           </p>
           <div className="verdict__actions">
             <button className="ghost-button" type="button" onClick={onBack}>Adjust assumptions</button>
