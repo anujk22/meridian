@@ -18,7 +18,7 @@ test.describe('recording path', () => {
     })
 
     await page.goto('/?recording=1&speed=20')
-    await expect(page.getByRole('heading', { name: 'MERIDIAN' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Make your best decisions/i })).toBeVisible()
     await page.getByRole('button', { name: 'Convene council' }).click()
     await expect(page.getByRole('heading', { name: /Choose funded AI research/i })).toBeVisible({ timeout: 5_000 })
     await page.getByRole('button', { name: 'Adjust assumptions' }).click()

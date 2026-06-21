@@ -31,19 +31,14 @@
   --surface-highlight: oklch(0.29 0.08 326);
   --track: oklch(0.28 0.07 316);
   --on-accent: oklch(0.98 0.012 60);
-  --landing-background:
-    radial-gradient(circle at 12% 84%, oklch(0.56 0.18 16 / 0.5), transparent 34%),
-    radial-gradient(circle at 77% 42%, oklch(0.34 0.14 322 / 0.5), transparent 33%),
-    radial-gradient(circle at 91% 79%, oklch(0.3 0.1 178 / 0.16), transparent 28%),
-    linear-gradient(118deg, oklch(0.075 0.032 281), oklch(0.11 0.045 292) 50%, oklch(0.14 0.06 312));
-  --simulation-background:
-    radial-gradient(circle at 14% 18%, oklch(0.29 0.1 330 / 0.34), transparent 31%),
-    radial-gradient(circle at 84% 68%, oklch(0.28 0.1 22 / 0.25), transparent 32%),
-    linear-gradient(150deg, oklch(0.07 0.03 281), oklch(0.125 0.052 303));
-  --verdict-background:
-    radial-gradient(circle at 12% 18%, oklch(0.29 0.12 20 / 0.3), transparent 30%),
-    radial-gradient(circle at 88% 76%, oklch(0.29 0.11 318 / 0.34), transparent 34%),
-    linear-gradient(135deg, oklch(0.08 0.034 282), oklch(0.15 0.06 308));
+  --aurora-background:
+    radial-gradient(ellipse 82% 58% at 50% 68%, oklch(0.54 0.17 20 / 0.7), transparent 66%),
+    radial-gradient(ellipse 62% 72% at 78% 38%, oklch(0.34 0.14 322 / 0.62), transparent 70%),
+    radial-gradient(ellipse 52% 54% at 15% 30%, oklch(0.28 0.11 325 / 0.44), transparent 72%),
+    linear-gradient(180deg, oklch(0.075 0.034 282), oklch(0.13 0.06 309) 42%, oklch(0.18 0.085 337) 66%, oklch(0.08 0.038 286));
+  --landing-background: var(--aurora-background);
+  --simulation-background: var(--aurora-background);
+  --verdict-background: var(--aurora-background);
 }
 
 body {
@@ -2239,11 +2234,14 @@ body:has(.phase-zero) {
 }
 
 .phase-zero {
-  background:
-    radial-gradient(circle at 10% 90%, oklch(0.57 0.18 17 / 0.48), transparent 34%),
-    radial-gradient(circle at 75% 43%, oklch(0.34 0.14 323 / 0.5), transparent 31%),
-    radial-gradient(circle at 94% 78%, oklch(0.29 0.1 178 / 0.16), transparent 29%),
-    linear-gradient(128deg, var(--void-deep), var(--void) 48%, oklch(0.14 0.06 312));
+  background: var(--aurora-background);
+}
+
+.phase-zero .intake-rail {
+  border-bottom: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .phase-zero__field::before,
