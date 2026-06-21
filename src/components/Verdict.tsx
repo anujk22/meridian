@@ -1,12 +1,16 @@
 import { motion, useReducedMotion } from 'motion/react'
 import type { DecisionResults, OptionId } from '../domain/types'
+import type { MutationTraceItem } from '../domain/trace'
+import type { PathExplanation } from '../domain/explain'
 import type { RetrievalResult } from '../evidence/retrieval'
-import { AGENTS } from '../scenario/builtin'
+import type { EvidenceChunk } from '../evidence/corpus'
+import { AGENTS, type ClaimArtifact, type HiddenConsideration } from '../scenario/builtin'
 import { AgentGlyph } from './AgentGlyph'
 import { AtlasGlobe } from './AtlasGlobe'
 import { BrandMark } from './BrandMark'
 import { CitationChip } from './CitationChip'
 import { ThemeToggle } from './ThemeToggle'
+import { DecisionTrace } from './DecisionTrace'
 
 const verdictCopy: Record<OptionId, {
   condition: string
@@ -38,7 +42,23 @@ const verdictCopy: Record<OptionId, {
   },
 }
 
-export function Verdict({ results, citations, onBack, onRestart, theme, onThemeToggle }: { results: DecisionResults; citations: Record<string, RetrievalResult>; onBack: () => void; onRestart: () => void; theme: 'light' | 'dark'; onThemeToggle: () => void }) {
+interface VerdictProps {
+  results: DecisionResults
+  citations: Record<string, RetrievalResult>
+  beforeCouncilResults: DecisionResults
+  councilResults: DecisionResults
+  traceEvidence: EvidenceChunk[]
+  traceClaims: ClaimArtifact[]
+  traceChallenges: HiddenConsideration[]
+  mutationTrace: MutationTraceItem[]
+  pathExplanations: PathExplanation[]
+  onBack: () => void
+  onRestart: () => void
+  theme: 'light' | 'dark'
+  onThemeToggle: () => void
+}
+
+export function Verdict({ results, citations, beforeCouncilResults, councilResults, traceEvidence, traceClaims, traceChallenges, mutationTrace, pathExplanations, onBack, onRestart, theme, onThemeToggle }: VerdictProps) {
   const reducedMotion = useReducedMotion()
   const leader = results.options.find((option) => option.id === results.leaderId)!
   const copy = verdictCopy[results.leaderId]
@@ -81,6 +101,7 @@ export function Verdict({ results, citations, onBack, onRestart, theme, onThemeT
               <p>This is the current assumption most capable of moving the recommendation.</p>
             </section>
           </div>
+          <DecisionTrace before={beforeCouncilResults} after={councilResults} evidence={traceEvidence} claims={traceClaims} challenges={traceChallenges} mutations={mutationTrace} paths={pathExplanations} />
           <div className="verdict__supporting">
             <section className="verdict__council">
               <span>Council recap</span>

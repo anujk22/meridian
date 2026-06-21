@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { computeDecision } from '../domain/engine'
+import { explainAllPaths } from '../domain/explain'
 import { createInitialModel } from '../domain/model'
 import { applyMutation } from '../domain/mutations'
-import type { ModelMutation } from '../domain/types'
+import { CURATED_MUTATION_EVIDENCE, isRangeMutation, rangeBefore, type MutationTraceItem } from '../domain/trace'
+import type { DecisionResults, ModelMutation } from '../domain/types'
 import { retrieveEvidence, type RetrievalResult } from '../evidence/retrieval'
 import { generateLiveScenario, type LiveScenario } from '../integrations/council'
 import { listLocalModels, preferredLocalModelId } from '../integrations/lmStudio'
@@ -20,6 +22,7 @@ import { useDemoTimeline } from '../scenario/useDemoTimeline'
 import { BrandMark } from '../components/BrandMark'
 import { ControlDeck } from '../components/ControlDeck'
 import { Intake } from '../components/Intake'
+import { MutationApproval } from '../components/MutationApproval'
 import { OutcomePanel } from '../components/OutcomePanel'
 import { PathArena } from '../components/PathArena'
 import { ThemeToggle } from '../components/ThemeToggle'
@@ -35,6 +38,13 @@ const phaseLabels = {
   recompute: 'Recomputing Model',
   explore: 'What-If Exploration',
   verdict: 'Decision Brief',
+}
+
+type MutationTimelineEvent = Extract<TimelineEvent, { type: 'mutation' }>
+
+interface PendingMutation {
+  trace: MutationTraceItem
+  event: MutationTimelineEvent
 }
 
 function councilPhase(phase: keyof typeof phaseLabels): 1 | 2 | 3 {
@@ -80,6 +90,10 @@ export function App() {
   const [liveEntryState, setLiveEntryState] = useState<'idle' | 'preparing' | 'error'>('idle')
   const [liveProgress, setLiveProgress] = useState('Reading the career decision')
   const [liveScenario, setLiveScenario] = useState<LiveScenario | null>(null)
+  const [beforeCouncilResults, setBeforeCouncilResults] = useState<DecisionResults>(() => computeDecision(createInitialModel()))
+  const [councilResults, setCouncilResults] = useState<DecisionResults>(() => computeDecision(createInitialModel()))
+  const [mutationTrace, setMutationTrace] = useState<MutationTraceItem[]>([])
+  const [pendingMutation, setPendingMutation] = useState<PendingMutation | null>(null)
   const [guided, setGuided] = useState(true)
   const [controlsOpen, setControlsOpen] = useState(false)
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -90,6 +104,7 @@ export function App() {
     }
   })
   const runtimeScenarioRef = useRef<LiveScenario | null>(null)
+  const modelRef = useRef(model)
   const mutationCursorRef = useRef(0)
   const presentedBriefRef = useRef(false)
   const recording = useMemo(() => new URLSearchParams(window.location.search).get('recording') === '1', [])
@@ -104,6 +119,15 @@ export function App() {
     claims: CLAIMS,
     hiddenConsiderations: HIDDEN_CONSIDERATIONS,
   }
+  const traceEvidence = useMemo(() => liveScenario?.retrievedEvidence ?? [
+    ...new Map(Object.values(citations).flatMap(({ chunks }) => chunks).map((chunk) => [chunk.id, chunk])).values(),
+  ], [citations, liveScenario])
+  const traceChallenges = useMemo(() => scenario.hiddenConsiderations.filter(({ id }) => demo.visibleConsiderationIds.includes(id)), [demo.visibleConsiderationIds, scenario.hiddenConsiderations])
+  const pathExplanations = useMemo(() => demo.phase === 'verdict' ? explainAllPaths(model) : [], [demo.phase, model])
+
+  useEffect(() => {
+    modelRef.current = model
+  }, [model])
 
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -146,10 +170,12 @@ export function App() {
   const handleTimelineEvent = useCallback((event: TimelineEvent) => {
     let runtimeEvent = event
     if (event.type === 'mutation') {
-      const generated = runtimeScenarioRef.current?.mutations[mutationCursorRef.current]
+      const mutationIndex = mutationCursorRef.current
+      const generated = runtimeScenarioRef.current?.mutations[mutationIndex]
+      let mutationEvent: MutationTimelineEvent = event
       mutationCursorRef.current += 1
       if (generated) {
-        runtimeEvent = {
+        mutationEvent = {
           ...event,
           mutation: generated,
           ledger: {
@@ -159,9 +185,38 @@ export function App() {
           },
         }
       }
+      runtimeEvent = mutationEvent
+      if (isRangeMutation(mutationEvent.mutation)) {
+        const live = runtimeScenarioRef.current
+        const trace: MutationTraceItem = {
+          id: event.ledger.id,
+          mutation: mutationEvent.mutation,
+          previousRange: rangeBefore(modelRef.current, mutationEvent.mutation),
+          evidenceIds: live?.mutationEvidenceIds[mutationIndex] ?? [...(CURATED_MUTATION_EVIDENCE[mutationIndex] ?? [])],
+          origin: live
+            ? mutationIndex < 2 ? 'Vesper challenge of Aster' : 'Vesper validation of Lumen'
+            : event.ledger.actor,
+          status: live ? 'pending' : 'applied',
+        }
+        setMutationTrace((current) => [...current.filter(({ id }) => id !== trace.id), trace])
+        if (live) {
+          setPendingMutation({ trace, event: mutationEvent })
+          dispatchDemo({ type: 'pause', value: true })
+          return
+        }
+      }
     }
     dispatchDemo({ type: 'timeline', event: runtimeEvent })
-    if (runtimeEvent.type === 'mutation') setModel((current) => applyMutation(current, runtimeEvent.mutation))
+    if (runtimeEvent.type === 'mutation') {
+      setModel((current) => {
+        const next = applyMutation(current, runtimeEvent.mutation)
+        modelRef.current = next
+        return next
+      })
+    }
+    if (runtimeEvent.type === 'phase' && runtimeEvent.phase === 'recompute') {
+      setCouncilResults(computeDecision(modelRef.current))
+    }
     if (event.type === 'claim') {
       const claim = (runtimeScenarioRef.current?.claims ?? CLAIMS).find((candidate) => candidate.id === event.claimId)
       void retrieveForArtifact(event.claimId, claim?.retrievalQuery ?? null)
@@ -210,7 +265,14 @@ export function App() {
     mutationCursorRef.current = 0
     presentedBriefRef.current = false
     setLiveScenario(generated)
-    setModel(createInitialModel())
+    const initialModel = createInitialModel()
+    const initialResults = computeDecision(initialModel)
+    modelRef.current = initialModel
+    setModel(initialModel)
+    setBeforeCouncilResults(initialResults)
+    setCouncilResults(initialResults)
+    setMutationTrace([])
+    setPendingMutation(null)
     setCitations(generated?.citations ?? {})
     setControlsOpen(false)
     setLiveEntryState('idle')
@@ -218,7 +280,14 @@ export function App() {
   }, [mode, prompt, refreshLocalModels, selectedModel])
 
   const resetDemo = useCallback(() => {
-    setModel(createInitialModel())
+    const initialModel = createInitialModel()
+    const initialResults = computeDecision(initialModel)
+    modelRef.current = initialModel
+    setModel(initialModel)
+    setBeforeCouncilResults(initialResults)
+    setCouncilResults(initialResults)
+    setMutationTrace([])
+    setPendingMutation(null)
     setCitations({})
     mutationCursorRef.current = 0
     presentedBriefRef.current = false
@@ -239,7 +308,7 @@ export function App() {
   useEffect(() => {
     if (demo.phase === 'intake' || demo.phase === 'verdict') return
     const handleKey = (event: KeyboardEvent) => {
-      if (event.code === 'Space') {
+      if (event.code === 'Space' && !pendingMutation) {
         event.preventDefault()
         dispatchDemo({ type: 'pause', value: !demo.paused })
       }
@@ -247,10 +316,14 @@ export function App() {
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [demo.paused, demo.phase, resetDemo])
+  }, [demo.paused, demo.phase, pendingMutation, resetDemo])
 
   const handleUserMutation = useCallback((mutation: ModelMutation) => {
-    setModel((current) => applyMutation(current, mutation))
+    setModel((current) => {
+      const next = applyMutation(current, mutation)
+      modelRef.current = next
+      return next
+    })
     const key = mutationKey(mutation)
     dispatchDemo({
       type: 'ledger',
@@ -264,6 +337,32 @@ export function App() {
       },
     })
   }, [])
+
+  const handleMutationDecision = useCallback((status: 'applied' | 'ignored') => {
+    if (!pendingMutation) return
+    if (status === 'applied') {
+      dispatchDemo({ type: 'timeline', event: pendingMutation.event })
+      setModel((current) => {
+        const next = applyMutation(current, pendingMutation.trace.mutation)
+        modelRef.current = next
+        return next
+      })
+    } else {
+      dispatchDemo({
+        type: 'ledger',
+        entry: {
+          id: `${pendingMutation.trace.id}-ignored`,
+          actor: 'You',
+          title: 'Proposed mutation ignored',
+          detail: pendingMutation.trace.mutation.reason,
+          tone: 'user',
+        },
+      })
+    }
+    setMutationTrace((current) => current.map((item) => item.id === pendingMutation.trace.id ? { ...item, status } : item))
+    setPendingMutation(null)
+    dispatchDemo({ type: 'pause', value: false })
+  }, [pendingMutation])
 
   const handleTestAssumptions = useCallback(() => {
     if (demo.phase === 'explore') {
@@ -290,7 +389,7 @@ export function App() {
   const activeCouncilPhase = showingLiveEntry ? 1 : councilPhase(displayedPhase)
 
   return (
-    <div className={`simulation-shell simulation-shell--${displayedPhase}${controlsOpen ? ' has-controls' : ''}${recording ? ' is-recording' : ''}${showingLiveEntry ? ' is-live-entry' : ''}`}>
+    <div className={`simulation-shell simulation-shell--${displayedPhase}${controlsOpen || pendingMutation ? ' has-controls' : ''}${recording ? ' is-recording' : ''}${showingLiveEntry ? ' is-live-entry' : ''}`}>
       <div className="observatory-background" aria-hidden="true"><span /><i /><b /></div>
       <header className="instrument-rail">
         <BrandMark compact />
@@ -300,7 +399,7 @@ export function App() {
         </div>
         <div className="instrument-rail__status">
           <ThemeToggle theme={theme} onToggle={toggleTheme} />
-          {!recording && demo.running && (
+          {!recording && demo.running && !pendingMutation && (
             <button className="icon-button" type="button" onClick={() => dispatchDemo({ type: 'pause', value: !demo.paused })}>
               {demo.paused ? 'Resume' : 'Pause'}
             </button>
@@ -352,6 +451,19 @@ export function App() {
       </div>
 
       <AnimatePresence>
+        {pendingMutation && (
+          <motion.div
+            className="control-deck-wrap mutation-approval-wrap"
+            initial={{ y: 44, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 44, opacity: 0 }}
+          >
+            <MutationApproval item={pendingMutation.trace} onApply={() => handleMutationDecision('applied')} onIgnore={() => handleMutationDecision('ignored')} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
         {demo.phase === 'explore' && controlsOpen && (
           <motion.div
             className="control-deck-wrap"
@@ -369,6 +481,13 @@ export function App() {
           <Verdict
             results={results}
             citations={citations}
+            beforeCouncilResults={beforeCouncilResults}
+            councilResults={councilResults}
+            traceEvidence={traceEvidence}
+            traceClaims={scenario.claims}
+            traceChallenges={traceChallenges}
+            mutationTrace={mutationTrace}
+            pathExplanations={pathExplanations}
             onBack={() => { setControlsOpen(true); dispatchDemo({ type: 'explore' }) }}
             onRestart={resetDemo}
             theme={theme}

@@ -10,7 +10,9 @@ export interface LiveScenario {
   claims: ClaimArtifact[]
   hiddenConsiderations: HiddenConsideration[]
   mutations: ModelMutation[]
+  mutationEvidenceIds: string[][]
   citations: Record<string, RetrievalResult>
+  retrievedEvidence: EvidenceChunk[]
   modelId: string
 }
 
@@ -56,6 +58,7 @@ interface AdvocateSpec {
 interface VesperReview {
   hidden: GroundedArgument[]
   mutations: ModelMutation[]
+  mutationEvidenceIds: string[][]
 }
 
 type EvidenceRetriever = (query: string, limit?: number) => Promise<RetrievalResult>
@@ -194,13 +197,16 @@ export function parseVesperReview(raw: string, retrieved: EvidenceChunk[]): Vesp
   if (!Array.isArray(rawHidden) || rawHidden.length < 2 || !Array.isArray(rawMutations) || rawMutations.length !== 4) {
     throw new Error('Vesper returned an incomplete cross-examination.')
   }
+  const mutationEvidenceIds: string[][] = []
   const mutations = MUTATION_SLOTS.map(({ optionId, factor }, index): ModelMutation => {
     const proposal = range(rawMutations[index], factor, allowed)
+    mutationEvidenceIds.push(proposal.evidenceIds)
     return { kind: 'setRange', optionId, factor, range: proposal.range, reason: proposal.reason }
   })
   return {
     hidden: rawHidden.slice(0, 2).map((item) => argument(item, allowed, true)),
     mutations,
+    mutationEvidenceIds,
   }
 }
 
@@ -353,7 +359,9 @@ export async function generateLiveScenario(
     claims,
     hiddenConsiderations,
     mutations: review.mutations,
+    mutationEvidenceIds: review.mutationEvidenceIds,
     citations,
+    retrievedEvidence: allEvidence,
     modelId,
   }
 }

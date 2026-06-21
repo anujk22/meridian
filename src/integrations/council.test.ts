@@ -89,6 +89,8 @@ describe('grounded multi-agent council', () => {
     expect(calls[3][1].content).toContain('Lumen case')
     expect(scenario.claims).toHaveLength(6)
     expect(scenario.mutations).toHaveLength(4)
+    expect(scenario.mutationEvidenceIds).toHaveLength(4)
+    expect(scenario.retrievedEvidence).toEqual([stableEvidence, startupEvidence, researchEvidence])
     expect(scenario.citations['stable-floor'].chunks).toEqual([stableEvidence])
     expect(progress).toContain('retrieving')
     expect(progress).toContain('cross-examination')

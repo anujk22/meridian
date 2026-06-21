@@ -21,6 +21,10 @@ test.describe('recording path', () => {
     await expect(page.getByRole('heading', { name: /See what your decision depends on/i })).toBeVisible()
     await page.getByRole('button', { name: 'Run career council' }).click()
     await expect(page.getByRole('heading', { name: /Choose funded AI research/i })).toBeVisible({ timeout: 5_000 })
+    await expect(page.getByText('Why Meridian changed its mind')).toBeVisible()
+    await expect(page.getByText('Before council')).toBeVisible()
+    await expect(page.getByText('After validated assumptions')).toBeVisible()
+    await expect(page.locator('.decision-trace__mutations article')).toHaveCount(4)
     await page.getByRole('button', { name: 'Adjust assumptions' }).click()
     await expect(page.locator('.leader-readout strong')).toHaveText('Research, conditionally')
 
@@ -131,6 +135,25 @@ test.describe('live local handoff', () => {
 
     await expect(page.getByText(/drafting independent grounded memos/i).first()).toBeVisible()
     await expect(page.getByRole('textbox')).toHaveCount(0)
+
+    for (let index = 0; index < 4; index += 1) {
+      const approval = page.getByRole('dialog', { name: 'Review a validated assumption change' })
+      await expect(approval).toBeVisible({ timeout: 10_000 })
+      await expect(approval.getByText(/Current low \/ mode \/ high/i)).toBeVisible()
+      if (index === 0) {
+        await expect(page.locator('.share-row--startup strong')).toHaveText('42%')
+        await approval.getByRole('button', { name: 'Apply Change' }).click()
+        await expect(page.locator('.share-row--startup strong')).toHaveText('36%')
+      } else if (index === 3) {
+        await approval.getByRole('button', { name: 'Ignore' }).click()
+      } else {
+        await approval.getByRole('button', { name: 'Apply Change' }).click()
+      }
+    }
+
     await expect(page.getByRole('heading', { name: /Choose funded AI research/i })).toBeVisible({ timeout: 10_000 })
+    await expect(page.locator('.decision-trace__mutations .is-applied')).toHaveCount(3)
+    await expect(page.locator('.decision-trace__mutations .is-ignored')).toHaveCount(1)
+    await expect(page.getByText('Why Meridian changed its mind')).toBeVisible()
   })
 })
