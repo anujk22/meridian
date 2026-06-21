@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="halo" cx="50%" cy="46%" r="58%">
+      <stop offset="0" stop-color="#ddaeff" stop-opacity=".72"/>
+      <stop offset="1" stop-color="#7541c4" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="shell" x1=".2" y1="0" x2=".8" y2="1">
+      <stop stop-color="#e7c3ff"/>
+      <stop offset=".45" stop-color="#9c5ce0"/>
+      <stop offset="1" stop-color="#5d2aa3"/>
+    </linearGradient>
+    <linearGradient id="face" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#3b245d"/>
+      <stop offset="1" stop-color="#160f2d"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="8" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="256" cy="256" r="226" fill="url(#halo)"/>
+  <g fill="url(#shell)" stroke="#f3dcff" stroke-width="7">
+    <path d="M256 42c31 42 39 80 0 113-39-33-31-71 0-113Z"/>
+    <path d="M431 141c-9 51-30 83-81 75-3-52 31-70 81-75Z"/>
+    <path d="M431 371c-50-5-84-23-81-75 51-8 72 24 81 75Z"/>
+    <path d="M256 470c-31-42-39-80 0-113 39 33 31 71 0 113Z"/>
+    <path d="M81 371c9-51 30-83 81-75 3 52-31 70-81 75Z"/>
+    <path d="M81 141c50 5 84 23 81 75-51 8-72-24-81-75Z"/>
+  </g>
+  <circle cx="256" cy="256" r="153" fill="url(#shell)" stroke="#f4ddff" stroke-width="9"/>
+  <path d="M137 210c0-49 40-89 89-89h60c49 0 89 40 89 89v89c0 49-40 89-89 89h-60c-49 0-89-40-89-89Z" fill="url(#face)" stroke="#e9c8ff" stroke-width="7"/>
+  <ellipse cx="213" cy="247" rx="22" ry="15" fill="#f5e7ff" filter="url(#glow)"/>
+  <ellipse cx="304" cy="238" rx="25" ry="18" fill="#f5e7ff" filter="url(#glow)" transform="rotate(-10 304 238)"/>
+  <path d="M195 220c14-14 30-17 47-7M278 207c20-9 39-4 52 11" fill="none" stroke="#b879ef" stroke-width="9" stroke-linecap="round"/>
+  <path d="M211 305c28 19 62 19 90-5" fill="none" stroke="#cf9cff" stroke-width="11" stroke-linecap="round"/>
+  <circle cx="115" cy="112" r="13" fill="#ffe77d" stroke="#fff5bd" stroke-width="5"/>
+  <circle cx="404" cy="100" r="9" fill="#7ff4e4" stroke="#cefff8" stroke-width="4"/>
+  <circle cx="425" cy="275" r="11" fill="#ff887a" stroke="#ffd0cb" stroke-width="4"/>
+  <path d="M204 389h104l-14 42-38 14-38-14Z" fill="#6c33b4" stroke="#d9aff8" stroke-width="6"/>
+  <text x="256" y="421" fill="#f8ebff" font-family="Arial, sans-serif" font-size="24" font-weight="700" text-anchor="middle">AI</text>
+</svg>

@@ -3,7 +3,6 @@ import { motion, useReducedMotion } from 'motion/react'
 import { AgentGlyph } from './AgentGlyph'
 import { AtlasGlobe } from './AtlasGlobe'
 import { BrandMark } from './BrandMark'
-import { ThemeToggle } from './ThemeToggle'
 
 interface IntakeProps {
   prompt: string
@@ -18,8 +17,6 @@ interface IntakeProps {
   loadingModels: boolean
   generating: boolean
   error: string | null
-  theme: 'light' | 'dark'
-  onThemeToggle: () => void
 }
 
 const exampleDecision = 'I’m choosing between a stable SWE role, joining a friend’s early AI startup, or pursuing a funded AI research program. I want deep AI skills, financial independence, and choices I won’t regret in five years.'
@@ -35,7 +32,7 @@ type ViewTransitionDocument = Document & {
   startViewTransition?: (callback: () => void) => void
 }
 
-export function Intake({ prompt, onPromptChange, onStart, recording, mode, onModeChange, models, selectedModel, onModelChange, loadingModels, generating, error, theme, onThemeToggle }: IntakeProps) {
+export function Intake({ prompt, onPromptChange, onStart, recording, mode, onModeChange, models, selectedModel, onModelChange, loadingModels, generating, error }: IntakeProps) {
   const promptRef = useRef<HTMLTextAreaElement>(null)
   const reduceMotion = useReducedMotion()
   const [composerFocused, setComposerFocused] = useState(false)
@@ -60,7 +57,6 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
         <BrandMark compact />
         <div className="intake-rail__actions">
           <span className="local-status"><i /> Local &amp; private</span>
-          <ThemeToggle theme={theme} onToggle={onThemeToggle} />
         </div>
       </header>
 
@@ -72,8 +68,8 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
           transition={{ duration: 0.62, ease: [0.16, 1, 0.3, 1] }}
           aria-labelledby="intake-title"
         >
-          <h1 className="meridian-display" id="intake-title" data-word="MERIDIAN">MERIDIAN</h1>
-          <p className="meridian-thesis">Simulate the paths your life could take.</p>
+          <h1 className="meridian-display" id="intake-title">Make your best decisions with AI that reasons with you.</h1>
+          <p className="meridian-thesis">Explore the paths your life could take.</p>
           <p className="briefing-bay__lede">
             Meridian turns one consequential choice into a four-agent simulation, mapping the downside, testing the upside, challenging the story, and showing what could change the outcome.
           </p>
