@@ -84,9 +84,9 @@ export function App() {
   const [controlsOpen, setControlsOpen] = useState(false)
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
-      return window.localStorage.getItem('meridian-theme') === 'dark' ? 'dark' : 'light'
+      return window.localStorage.getItem('meridian-theme') === 'light' ? 'light' : 'dark'
     } catch {
-      return 'light'
+      return 'dark'
     }
   })
   const runtimeScenarioRef = useRef<LiveScenario | null>(null)
