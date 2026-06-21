@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { useEffect, useId, useState } from 'react'
 import type { DecisionResults } from '../domain/types'
 import type { AgentId } from '../scenario/builtin'
 
@@ -15,9 +15,15 @@ export function AtlasGlobe({ compact = false, active = false, preparing = false,
   const id = useId().replaceAll(':', '')
   const glassId = `core-glass-${id}`
   const glowId = `core-glow-${id}`
+  const [bearingTarget, setBearingTarget] = useState<AgentId | null>(null)
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => setBearingTarget(pointingAt))
+    return () => window.cancelAnimationFrame(frame)
+  }, [pointingAt])
 
   return (
-    <div className={`atlas-globe meridian-core${compact ? ' atlas-globe--compact' : ''}${active ? ' is-active' : ''}${preparing ? ' is-preparing' : ''}${pointingAt ? ` is-pointing is-pointing-${pointingAt}` : ''} ${className}`}>
+    <div className={`atlas-globe meridian-core${compact ? ' atlas-globe--compact' : ''}${active ? ' is-active' : ''}${preparing ? ' is-preparing' : ''}${bearingTarget ? ` is-pointing-${bearingTarget}` : ''} ${className}`}>
       <svg className="meridian-core__svg" viewBox="0 0 320 320" aria-hidden="true">
         <defs>
           <radialGradient id={glassId} cx="50%" cy="42%" r="62%">
@@ -61,7 +67,6 @@ export function AtlasGlobe({ compact = false, active = false, preparing = false,
             d="M160 92 170 148 228 160 170 172 160 228 150 172 92 160 150 148 160 92Z"
             filter={`url(#${glowId})`}
           />
-          <circle className="meridian-core__bearing-tip" cx="160" cy="92" r="3" />
         </g>
         <circle className="meridian-core__center-ring" cx="160" cy="160" r="15" />
         <circle className="meridian-core__center" cx="160" cy="160" r="5" />
