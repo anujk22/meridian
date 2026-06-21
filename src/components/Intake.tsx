@@ -55,9 +55,6 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
 
       <header className="intake-rail">
         <BrandMark compact />
-        <div className="intake-rail__actions">
-          <span className="local-status"><i /> Local &amp; private</span>
-        </div>
       </header>
 
       <div className="phase-zero__stage">
