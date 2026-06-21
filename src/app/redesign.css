@@ -2410,3 +2410,19 @@ body:has(.phase-zero) {
     line-height: 1;
   }
 }
+
+@media (min-height: 821px) and (min-width: 1001px) {
+  .briefing-bay {
+    transform: translateY(clamp(-30px, -2vh, -16px));
+  }
+
+  .decision-brief {
+    padding: 18px;
+  }
+
+  .decision-brief textarea {
+    height: clamp(112px, 12dvh, 146px);
+    min-height: 112px;
+    max-height: 146px;
+  }
+}
