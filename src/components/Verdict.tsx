@@ -6,6 +6,7 @@ import { AgentGlyph } from './AgentGlyph'
 import { AtlasGlobe } from './AtlasGlobe'
 import { BrandMark } from './BrandMark'
 import { CitationChip } from './CitationChip'
+import { ThemeToggle } from './ThemeToggle'
 
 const verdictCopy: Record<OptionId, {
   condition: string
@@ -37,7 +38,7 @@ const verdictCopy: Record<OptionId, {
   },
 }
 
-export function Verdict({ results, citations, onBack, onRestart }: { results: DecisionResults; citations: Record<string, RetrievalResult>; onBack: () => void; onRestart: () => void }) {
+export function Verdict({ results, citations, onBack, onRestart, theme, onThemeToggle }: { results: DecisionResults; citations: Record<string, RetrievalResult>; onBack: () => void; onRestart: () => void; theme: 'light' | 'dark'; onThemeToggle: () => void }) {
   const reducedMotion = useReducedMotion()
   const leader = results.options.find((option) => option.id === results.leaderId)!
   const copy = verdictCopy[results.leaderId]
@@ -51,7 +52,10 @@ export function Verdict({ results, citations, onBack, onRestart }: { results: De
     >
       <header className="verdict__header">
         <BrandMark />
-        <div><span>Decision brief</span><small>Conditional · assumption-based · local</small></div>
+        <div className="verdict__header-meta">
+          <div><span>Decision brief</span><small>Conditional · assumption-based · local</small></div>
+          <ThemeToggle theme={theme} onToggle={onThemeToggle} />
+        </div>
       </header>
       <div className="verdict__body">
         <aside className="verdict__index">

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { computeDecision } from '../domain/engine'
 import { createInitialModel } from '../domain/model'
@@ -21,6 +21,7 @@ import { ControlDeck } from '../components/ControlDeck'
 import { Intake } from '../components/Intake'
 import { OutcomePanel } from '../components/OutcomePanel'
 import { PathArena } from '../components/PathArena'
+import { ThemeToggle } from '../components/ThemeToggle'
 import { Verdict } from '../components/Verdict'
 
 const phaseLabels = {
@@ -79,6 +80,13 @@ export function App() {
   const [liveScenario, setLiveScenario] = useState<LiveScenario | null>(null)
   const [guided, setGuided] = useState(true)
   const [controlsOpen, setControlsOpen] = useState(false)
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    try {
+      return window.localStorage.getItem('meridian-theme') === 'dark' ? 'dark' : 'light'
+    } catch {
+      return 'light'
+    }
+  })
   const runtimeScenarioRef = useRef<LiveScenario | null>(null)
   const mutationCursorRef = useRef(0)
   const presentedBriefRef = useRef(false)
@@ -94,6 +102,20 @@ export function App() {
     claims: CLAIMS,
     hiddenConsiderations: HIDDEN_CONSIDERATIONS,
   }
+
+  useLayoutEffect(() => {
+    document.documentElement.dataset.theme = theme
+    document.documentElement.style.colorScheme = theme
+    try {
+      window.localStorage.setItem('meridian-theme', theme)
+    } catch {
+      // Theme persistence is optional when storage is unavailable.
+    }
+  }, [theme])
+
+  const toggleTheme = useCallback(() => {
+    setTheme((current) => current === 'light' ? 'dark' : 'light')
+  }, [])
 
   const refreshLocalModels = useCallback(async () => {
     setLoadingModels(true)
@@ -253,7 +275,7 @@ export function App() {
   const showingLiveEntry = demo.phase === 'intake' && liveEntryState !== 'idle'
 
   if (demo.phase === 'intake' && !showingLiveEntry) {
-    return <Intake prompt={prompt} onPromptChange={setPrompt} onStart={() => void startDemo()} recording={recording} mode={recording ? 'curated' : mode} onModeChange={handleModeChange} models={models} selectedModel={selectedModel} onModelChange={setSelectedModel} loadingModels={loadingModels} generating={generating} error={liveError} guided={guided} onGuidedChange={setGuided} />
+    return <Intake prompt={prompt} onPromptChange={setPrompt} onStart={() => void startDemo()} recording={recording} mode={recording ? 'curated' : mode} onModeChange={handleModeChange} models={models} selectedModel={selectedModel} onModelChange={setSelectedModel} loadingModels={loadingModels} generating={generating} error={liveError} theme={theme} onThemeToggle={toggleTheme} />
   }
 
   const displayedPhase = showingLiveEntry ? 'decomposition' : demo.phase
@@ -269,6 +291,7 @@ export function App() {
           <small>{showingLiveEntry ? (liveEntryState === 'error' ? 'Council Needs Attention' : 'Reading the Career Decision') : `${phaseLabels[displayedPhase]} · Phase ${activeCouncilPhase} of 3`}</small>
         </div>
         <div className="instrument-rail__status">
+          <ThemeToggle theme={theme} onToggle={toggleTheme} />
           {!recording && demo.running && (
             <button className="icon-button" type="button" onClick={() => dispatchDemo({ type: 'pause', value: !demo.paused })}>
               {demo.paused ? 'Resume' : 'Pause'}
@@ -339,6 +362,8 @@ export function App() {
             citations={citations}
             onBack={() => { setControlsOpen(true); dispatchDemo({ type: 'explore' }) }}
             onRestart={resetDemo}
+            theme={theme}
+            onThemeToggle={toggleTheme}
           />
         )}
       </AnimatePresence>

@@ -16,8 +16,8 @@ export function OutcomePanel({ results, focused, controlsOpen, onTestAssumptions
   return (
     <aside className={`outcome-panel${focused ? ' is-focused' : ''}`} aria-label="Current decision lean">
       <div className="leader-readout" aria-live="polite">
-        <span>Current Lean</span>
-        <div><strong>{shortNames[leader.id]}</strong><b>, conditionally</b><i aria-label="The result depends on current assumptions">i</i></div>
+        <span>Current lean</span>
+        <strong>{shortNames[leader.id]}, conditionally</strong>
       </div>
 
       <div className="scenario-shares">
@@ -29,7 +29,11 @@ export function OutcomePanel({ results, focused, controlsOpen, onTestAssumptions
         ))}
       </div>
 
-      <p className="sensitivity">Changes if <strong>{results.sensitivity.label}</strong> cannot be verified.</p>
+      <div className="sensitivity">
+        <span>Verify next</span>
+        <strong>{results.sensitivity.label}</strong>
+        <small>If this assumption fails, the recommendation may change.</small>
+      </div>
 
       <button className="test-assumptions-button" type="button" onClick={onTestAssumptions}>
         {controlsOpen ? 'Close Assumptions' : 'Test Assumptions'} <span aria-hidden="true">›</span>

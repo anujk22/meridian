@@ -1,9 +1,7 @@
 import { motion } from 'motion/react'
-import { AGENTS } from '../scenario/builtin'
-import { BUILTIN_PROMPT } from '../scenario/builtin'
-import { AgentGlyph } from './AgentGlyph'
 import { AtlasGlobe } from './AtlasGlobe'
 import { BrandMark } from './BrandMark'
+import { ThemeToggle } from './ThemeToggle'
 
 interface IntakeProps {
   prompt: string
@@ -18,18 +16,16 @@ interface IntakeProps {
   loadingModels: boolean
   generating: boolean
   error: string | null
-  guided: boolean
-  onGuidedChange: (value: boolean) => void
+  theme: 'light' | 'dark'
+  onThemeToggle: () => void
 }
 
-export function Intake({ prompt, onPromptChange, onStart, recording, mode, onModeChange, models, selectedModel, onModelChange, loadingModels, generating, error, guided, onGuidedChange }: IntakeProps) {
+export function Intake({ prompt, onPromptChange, onStart, recording, mode, onModeChange, models, selectedModel, onModelChange, loadingModels, generating, error, theme, onThemeToggle }: IntakeProps) {
   return (
     <main className="intake-shell">
-      <div className="intake-shell__sky" aria-hidden="true"><span /><i /><b /></div>
-
       <header className="intake-header">
         <BrandMark />
-        <div className="local-status"><span /> Council ready · private on this machine</div>
+        <ThemeToggle theme={theme} onToggle={onThemeToggle} />
       </header>
 
       <section className="intake-content">
@@ -39,7 +35,6 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.68, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p className="intake-kicker">Decision intelligence for high-stakes career tradeoffs</p>
           <h1>See what your decision <em>depends on.</em></h1>
           <p className="intake-lede">
             Meridian stages a four-agent council around one career-path decision. Each perspective counsels, challenges assumptions, attaches evidence, and shows what could change the recommendation.
@@ -54,23 +49,9 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.72, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
-          aria-label="Preview of four AI counselors orbiting the Decision Atlas"
+          aria-label="Meridian Decision Atlas"
         >
-          <svg viewBox="0 0 560 420" aria-hidden="true">
-            <ellipse cx="280" cy="210" rx="225" ry="156" />
-            <path d="M 120 105 C 180 125, 210 150, 248 185" />
-            <path d="M 440 105 C 380 125, 350 150, 312 185" />
-            <path d="M 120 315 C 180 295, 210 270, 248 235" />
-            <path d="M 440 315 C 380 295, 350 270, 312 235" />
-          </svg>
           <AtlasGlobe compact active />
-          {AGENTS.map((agent) => (
-            <div className={`intake-preview__agent intake-preview__agent--${agent.id}`} key={agent.id}>
-              <AgentGlyph agentId={agent.id} />
-              <span><strong>{agent.name}</strong>{agent.role}</span>
-            </div>
-          ))}
-          <p><strong>Four perspectives.</strong> One conditional recommendation.</p>
         </motion.div>
 
         <motion.div
@@ -80,8 +61,8 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
           transition={{ duration: 0.62, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="intake-instrument__heading">
-            <div><strong>Career decision composer</strong><span>Calibrated demo: stable role, startup, and research paths</span></div>
-            <button className="example-chip" type="button" onClick={() => onPromptChange(BUILTIN_PROMPT)}>Use the CS career example</button>
+            <strong>Describe your career decision</strong>
+            <span>Compare a stable role, startup, and research path.</span>
           </div>
           <label className="sr-only" htmlFor="decision-prompt">Describe the career decision you are weighing</label>
           <textarea
@@ -107,10 +88,6 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
                     </select>
                   </label>
                 )}
-                <label className="guidance-toggle">
-                  <input type="checkbox" checked={guided} onChange={(event) => onGuidedChange(event.target.checked)} />
-                  Guide me through the result
-                </label>
               </div>
             )}
             <span className="character-count">{prompt.length}/520</span>
