@@ -14,10 +14,10 @@ import { CitationChip } from './CitationChip'
 import { LoadingEllipsis } from './LoadingEllipsis'
 
 const personaCopy: Record<AgentId, string> = {
-  stableAdvocate: 'Protects the Financial Floor',
-  startupAdvocate: 'Tests Asymmetric Upside',
-  researchAdvocate: 'Maps Durable AI Depth',
-  skeptic: 'Challenges the Story',
+  stableAdvocate: 'Protects Stability & Continuity',
+  startupAdvocate: 'Tests Change & Possibility',
+  researchAdvocate: 'Maps Values & Long-Term Fit',
+  skeptic: 'Challenges the Whole Story',
 }
 
 const routeByAgent: Record<AgentId, string> = {
@@ -56,7 +56,7 @@ export function PathArena({
   latestLedgerEntry,
   results,
   preparing = false,
-  preparationStatus = 'The four counselors are reading the career decision.',
+  preparationStatus = 'The four counselors are reading the decision.',
   preparationError = null,
   onReturnToIntake,
 }: PathArenaProps) {
@@ -140,11 +140,11 @@ export function PathArena({
 
       <div className="assumption-cloud" aria-label="Assumptions being tested">
         <span className={isCrossExam ? 'is-challenged' : ''}>Financial Floor {isCrossExam ? '↓' : ''}</span>
-        <span>Startup Traction</span>
-        <span className={isSynthesis ? 'is-challenged' : ''}>Funded Master’s {isSynthesis ? '↑' : ''}</span>
-        <span>AI Mentorship</span>
-        <span>Role Quality</span>
-        <span className={isCrossExam ? 'is-challenged' : ''}>Ownership Clarity</span>
+        <span>Relationship Impact</span>
+        <span className={isSynthesis ? 'is-challenged' : ''}>Long-Term Growth {isSynthesis ? '↑' : ''}</span>
+        <span>Daily Wellbeing</span>
+        <span>Reversibility</span>
+        <span className={isCrossExam ? 'is-challenged' : ''}>Hidden Costs</span>
       </div>
 
       {AGENTS.map((agent, index) => {
@@ -199,7 +199,7 @@ export function PathArena({
       <AnimatePresence>
         {isCrossExam && (
           <motion.p className="challenge-note" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-            Vesper is testing Aster’s<br />runway and ownership claims
+            Vesper is testing Aster’s<br />upside and change assumptions
           </motion.p>
         )}
       </AnimatePresence>

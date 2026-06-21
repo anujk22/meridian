@@ -49,27 +49,28 @@ export type TimelineEvent =
   | { at: number; type: 'focus'; target: 'paths' | 'ledger' | 'axis' | 'controls' }
 
 export const BUILTIN_PROMPT =
-  "I'm graduating in computer science and choosing between a stable SWE job, joining a friend's early AI startup, or a funded AI master's. I want deep AI skills, financial independence, and choices I won't regret in five years."
+  'Should I move to a new city for a promising job, stay near the people and routines I value, or take a gap year to travel? I care about growth, financial stability, my relationships, and what each choice makes possible later.'
 
 export const CONTEXT_CHIPS = [
-  'Graduating CS student',
-  'Limited savings',
-  'No dependents',
-  'Open to relocation',
-  'Five-year horizon',
+  'A major life transition',
+  'Important local relationships',
+  'A promising work opportunity',
+  'Travel is still feasible',
+  'Three-year horizon',
 ]
 
 export const GOAL_CHIPS = [
-  'Become a serious AI engineer',
-  'Reach financial independence',
-  'Preserve future options',
+  'Keep growing',
+  'Protect financial stability',
+  'Honor relationships and wellbeing',
+  'Preserve future choices',
 ]
 
 export const AGENTS: Agent[] = [
-  { id: 'stableAdvocate', name: 'Harbor', role: 'Stable path', symbol: 'H', tone: 'stable' },
-  { id: 'startupAdvocate', name: 'Aster', role: 'Venture path', symbol: 'A', tone: 'startup' },
-  { id: 'researchAdvocate', name: 'Lumen', role: 'Research path', symbol: 'L', tone: 'research' },
-  { id: 'skeptic', name: 'Vesper', role: 'Red team', symbol: 'V', tone: 'risk' },
+  { id: 'stableAdvocate', name: 'Harbor', role: 'Stability & continuity', symbol: 'H', tone: 'stable' },
+  { id: 'startupAdvocate', name: 'Aster', role: 'Change & possibility', symbol: 'A', tone: 'startup' },
+  { id: 'researchAdvocate', name: 'Lumen', role: 'Values & long-term fit', symbol: 'L', tone: 'research' },
+  { id: 'skeptic', name: 'Vesper', role: 'Assumption challenger', symbol: 'V', tone: 'risk' },
 ]
 
 export const CLAIMS: ClaimArtifact[] = [
@@ -77,17 +78,17 @@ export const CLAIMS: ClaimArtifact[] = [
     id: 'stable-floor',
     optionId: 'stable',
     agentId: 'stableAdvocate',
-    title: 'The floor compounds',
-    body: 'Income, mentorship, and a credible fallback create room to take a sharper risk later.',
+    title: 'Stability has real value',
+    body: 'Staying close to trusted people and familiar routines preserves support, lowers disruption, and leaves room for a more deliberate next step.',
     kind: 'claim',
-    retrievalQuery: 'software engineering career stability salary outlook mentorship',
+    retrievalQuery: null,
   },
   {
     id: 'stable-concession',
     optionId: 'stable',
     agentId: 'stableAdvocate',
     title: 'Comfort can become inertia',
-    body: 'A general SWE role only serves the AI goal if the work and mobility are real.',
+    body: 'Continuity only serves the user if staying is an active choice, not fear dressed up as prudence.',
     kind: 'concession',
     retrievalQuery: null,
   },
@@ -95,17 +96,17 @@ export const CLAIMS: ClaimArtifact[] = [
     id: 'startup-ownership',
     optionId: 'startup',
     agentId: 'startupAdvocate',
-    title: 'Maximum learning velocity',
-    body: 'Small-team ownership compresses feedback loops and puts consequential work in reach immediately.',
+    title: 'Change can expand the possible',
+    body: 'Moving could combine meaningful work, independence, and a new community in one decisive step.',
     kind: 'claim',
-    retrievalQuery: 'startup survival uncertainty early stage company risk',
+    retrievalQuery: 'software employment stability salary outlook relocation opportunity',
   },
   {
     id: 'startup-concession',
     optionId: 'startup',
     agentId: 'startupAdvocate',
-    title: 'The role can outrun the runway',
-    body: 'Ownership is valuable only if runway, mentorship, and role clarity survive contact with reality.',
+    title: 'The opportunity is not the whole life',
+    body: 'A promising job cannot answer whether the city, distance from loved ones, and daily reality will fit.',
     kind: 'concession',
     retrievalQuery: null,
   },
@@ -113,40 +114,40 @@ export const CLAIMS: ClaimArtifact[] = [
     id: 'research-depth',
     optionId: 'research',
     agentId: 'researchAdvocate',
-    title: 'Depth is the stated priority',
-    body: 'Protected research time and strong lab access directly serve the five-year AI-engineer goal.',
+    title: 'Exploration may be the point',
+    body: 'A bounded gap year could create perspective, confidence, and experiences that neither staying nor immediately optimizing for work can provide.',
     kind: 'claim',
-    retrievalQuery: 'funded research masters AI graduate support lab access stipend',
+    retrievalQuery: null,
   },
   {
     id: 'research-concession',
     optionId: 'research',
     agentId: 'researchAdvocate',
-    title: 'Funding changes the decision',
-    body: 'Without real funding and advisor access, delayed earnings can overwhelm the specialization benefit.',
+    title: 'Freedom still needs a floor',
+    body: 'Without a realistic budget, end date, and re-entry plan, exploration can trade restorative freedom for prolonged uncertainty.',
     kind: 'concession',
-    retrievalQuery: 'graduate school funding loans work study opportunity cost',
+    retrievalQuery: null,
   },
 ]
 
 export const HIDDEN_CONSIDERATIONS: HiddenConsideration[] = [
   {
     id: 'equity-not-cash',
-    title: 'Equity is not a financial floor',
-    body: '“I’m not scoring startup equity as guaranteed upside.” The evidence supports a wide, low-confidence range instead.',
-    retrievalQuery: 'private startup equity liquidity risk options not cash',
+    title: 'A compelling story is not lived experience',
+    body: 'The imagined version of a new city, staying home, or traveling may be carrying more weight than the likely day-to-day reality.',
+    retrievalQuery: null,
   },
   {
     id: 'identity-vs-goal',
-    title: 'Identity may be masquerading as utility',
-    body: 'The most exciting story is not automatically the path that best serves the stated five-year goal.',
+    title: 'Other people’s timelines may be intruding',
+    body: 'The most socially legible choice is not automatically the one that best serves the user’s values and season of life.',
     retrievalQuery: null,
   },
   {
     id: 'funding-pivot',
-    title: 'Funded versus unfunded changes everything',
-    body: 'Funding is not a footnote. It changes the research path’s floor, opportunity cost, and regret profile.',
-    retrievalQuery: 'research masters funded stipend tuition fellowship changes cost',
+    title: 'Reversibility changes the stakes',
+    body: 'A trial move, defined travel period, or delayed start can turn an identity-sized choice into a testable next step.',
+    retrievalQuery: null,
   },
 ]
 
@@ -156,14 +157,14 @@ export const SKEPTIC_MUTATIONS: ModelMutation[] = [
     optionId: 'startup',
     factor: 'financialFloor',
     range: { low: 8, mode: 27, high: 53, confidence: 0.36 },
-    reason: 'Private-company equity cannot be treated as liquid or guaranteed compensation.',
+    reason: 'The bold-change path has meaningful hidden costs until the job, city, and support system are tested.',
   },
   {
     kind: 'setRange',
     optionId: 'startup',
     factor: 'ownershipUpside',
     range: { low: 50, mode: 75, high: 92, confidence: 0.41 },
-    reason: 'The upside remains high, but its range widens when traction and liquidity are unverified.',
+    reason: 'The upside remains high, but its range widens when the imagined benefits of change are unverified.',
   },
 ]
 
@@ -173,14 +174,14 @@ export const ANALYST_MUTATIONS: ModelMutation[] = [
     optionId: 'research',
     factor: 'aiGrowth',
     range: { low: 77, mode: 89, high: 97, confidence: 0.84 },
-    reason: 'The user named durable AI depth as the strongest five-year priority.',
+    reason: 'The user named growth and perspective as important alongside work and financial stability.',
   },
   {
     kind: 'setRange',
     optionId: 'research',
     factor: 'optionality',
     range: { low: 69, mode: 82, high: 92, confidence: 0.85 },
-    reason: 'Funded lab access preserves research and industry pathways.',
+    reason: 'A bounded, affordable exploration period can preserve several future paths rather than closing them.',
   },
 ]
 
@@ -210,8 +211,8 @@ export const TIMELINE: TimelineEvent[] = [
     ledger: {
       id: 'ledger-startup-floor',
       actor: 'Vesper',
-      title: 'Startup floor reduced',
-      detail: 'Equity is illiquid; security range lowered and confidence reduced.',
+      title: 'Change-path floor reduced',
+      detail: 'Relocation and social disruption are unresolved, so the security range is lower.',
       tone: 'risk',
     },
   },
@@ -222,8 +223,8 @@ export const TIMELINE: TimelineEvent[] = [
     ledger: {
       id: 'ledger-startup-upside',
       actor: 'Vesper',
-      title: 'Startup upside widened',
-      detail: 'No verified traction, so upside remains possible but less certain.',
+      title: 'Change-path upside widened',
+      detail: 'The opportunity is promising, but its broader life impact is still uncertain.',
       tone: 'risk',
     },
   },
@@ -237,8 +238,8 @@ export const TIMELINE: TimelineEvent[] = [
     ledger: {
       id: 'ledger-ai-depth',
       actor: 'Lumen',
-      title: 'AI depth raised',
-      detail: 'Research aligns most directly with the user’s highest stated priority.',
+      title: 'Growth potential raised',
+      detail: 'Exploration aligns directly with the user’s desire for growth and perspective.',
       tone: 'analysis',
     },
   },
@@ -249,8 +250,8 @@ export const TIMELINE: TimelineEvent[] = [
     ledger: {
       id: 'ledger-optionality',
       actor: 'Lumen',
-      title: 'Research optionality raised',
-      detail: 'Funding and lab access preserve research and industry branches.',
+      title: 'Exploration optionality raised',
+      detail: 'A bounded gap year can preserve work, place, and relationship choices.',
       tone: 'analysis',
     },
   },

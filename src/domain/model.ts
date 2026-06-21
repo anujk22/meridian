@@ -3,9 +3,9 @@ import type { DecisionModel, FactorDefinition } from './types'
 export const FACTORS: FactorDefinition[] = [
   {
     key: 'aiGrowth',
-    label: 'AI depth & growth',
-    shortLabel: 'AI growth',
-    description: 'Technical depth, learning rate, and access to serious AI work.',
+    label: 'Growth & learning',
+    shortLabel: 'Growth',
+    description: 'Personal growth, learning, and access to meaningful new experiences.',
     horizonBias: 0.26,
   },
   {
@@ -24,9 +24,9 @@ export const FACTORS: FactorDefinition[] = [
   },
   {
     key: 'optionality',
-    label: 'Career capital & optionality',
+    label: 'Future optionality',
     shortLabel: 'Optionality',
-    description: 'Credibility, network, mentorship, and quality of future choices.',
+    description: 'Relationships, resources, and the quality of choices available later.',
     horizonBias: 0.2,
   },
   {
@@ -63,9 +63,9 @@ export function createInitialModel(): DecisionModel {
     options: [
       {
         id: 'stable',
-        label: 'Stable SWE Job',
-        shortLabel: 'Stable',
-        character: 'Strong floor · mentorship · compounding career capital',
+        label: 'Continuity path',
+        shortLabel: 'Continuity',
+        character: 'Stronger floor · fewer disruptions · room to build from stability',
         factors: {
           aiGrowth: { low: 52, mode: 73, high: 83, confidence: 0.76 },
           financialFloor: { low: 78, mode: 89, high: 96, confidence: 0.92 },
@@ -76,9 +76,9 @@ export function createInitialModel(): DecisionModel {
       },
       {
         id: 'startup',
-        label: 'Early AI Startup',
-        shortLabel: 'Startup',
-        character: 'Fast learning · ownership · highest modeled ceiling',
+        label: 'Bold-change path',
+        shortLabel: 'Change',
+        character: 'More agency · faster change · highest modeled ceiling',
         factors: {
           aiGrowth: { low: 65, mode: 85, high: 96, confidence: 0.56 },
           financialFloor: { low: 26, mode: 51, high: 76, confidence: 0.52 },
@@ -89,9 +89,9 @@ export function createInitialModel(): DecisionModel {
       },
       {
         id: 'research',
-        label: "Funded AI Master's",
-        shortLabel: 'Research',
-        character: 'Deep specialization · lab access · long-horizon credibility',
+        label: 'Exploration path',
+        shortLabel: 'Explore',
+        character: 'Deeper learning · wider perspective · long-horizon discovery',
         factors: {
           aiGrowth: { low: 72, mode: 85, high: 95, confidence: 0.8 },
           financialFloor: { low: 38, mode: 54, high: 70, confidence: 0.72 },

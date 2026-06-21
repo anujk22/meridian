@@ -20,12 +20,12 @@ test.describe('recording path', () => {
     await page.goto('/?recording=1&speed=20')
     await expect(page.getByRole('heading', { name: /Make your best decisions/i })).toBeVisible()
     await page.getByRole('button', { name: 'Convene council' }).click()
-    await expect(page.getByRole('heading', { name: /Choose funded AI research/i })).toBeVisible({ timeout: 5_000 })
+    await expect(page.getByRole('heading', { name: /strongest current direction/i })).toBeVisible({ timeout: 5_000 })
     await page.getByRole('button', { name: 'Adjust assumptions' }).click()
-    await expect(page.locator('.leader-readout strong')).toHaveText('Research, conditionally')
+    await expect(page.locator('.leader-readout strong')).toHaveText('Exploration path, conditionally')
 
     await page.getByRole('button', { name: 'Review recommendation' }).click()
-    await expect(page.getByRole('heading', { name: /Choose funded AI research/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /strongest current direction/i })).toBeVisible()
     await expect(page.getByText(/assumption-based/i)).toBeVisible()
 
     expect(consoleErrors).toEqual([])
@@ -35,23 +35,23 @@ test.describe('recording path', () => {
   test('lets all three paths lead through the shared controls', async ({ page }) => {
     await page.goto('/?recording=1&speed=20')
     await page.getByRole('button', { name: 'Convene council' }).click()
-    await expect(page.getByRole('heading', { name: /Choose funded AI research/i })).toBeVisible({ timeout: 5_000 })
+    await expect(page.getByRole('heading', { name: /strongest current direction/i })).toBeVisible({ timeout: 5_000 })
     await page.getByRole('button', { name: 'Adjust assumptions' }).click()
 
     await page.getByRole('slider', { name: 'Risk tolerance' }).fill('0')
     await page.getByRole('checkbox', { name: 'Need high income now' }).check()
-    await expect(page.locator('.leader-readout strong')).toHaveText('Stable, conditionally')
+    await expect(page.locator('.leader-readout strong')).toHaveText('Continuity path, conditionally')
 
     await page.getByRole('checkbox', { name: 'Need high income now' }).uncheck()
-    await page.getByRole('slider', { name: 'AI growth weight' }).fill('60')
-    await page.getByRole('checkbox', { name: 'Master’s fully funded' }).check()
-    await expect(page.locator('.leader-readout strong')).toHaveText('Research, conditionally')
+    await page.getByRole('slider', { name: 'Growth & learning weight' }).fill('60')
+    await page.getByRole('checkbox', { name: 'Exploration path is affordable' }).check()
+    await expect(page.locator('.leader-readout strong')).toHaveText('Exploration path, conditionally')
 
     await page.getByRole('slider', { name: 'Risk tolerance' }).fill('100')
-    await page.getByRole('slider', { name: 'Ownership weight' }).fill('60')
-    await page.getByRole('checkbox', { name: 'Startup has traction' }).check()
-    await page.getByRole('checkbox', { name: 'Prefer building' }).check()
-    await expect(page.locator('.leader-readout strong')).toHaveText('Startup, conditionally')
+    await page.getByRole('slider', { name: 'Agency & upside weight' }).fill('60')
+    await page.getByRole('checkbox', { name: 'Change path has strong evidence' }).check()
+    await page.getByRole('checkbox', { name: 'Prefer greater agency' }).check()
+    await expect(page.locator('.leader-readout strong')).toHaveText('Bold-change path, conditionally')
   })
 })
 
@@ -61,7 +61,7 @@ test.describe('recording viewport', () => {
   test('fits the short recording crop and honors reduced motion', async ({ page }) => {
     await page.goto('/?recording=1&speed=20')
     await page.getByRole('button', { name: 'Convene council' }).click()
-    await expect(page.getByRole('heading', { name: /Choose funded AI research/i })).toBeVisible({ timeout: 5_000 })
+    await expect(page.getByRole('heading', { name: /strongest current direction/i })).toBeVisible({ timeout: 5_000 })
     await page.getByRole('button', { name: 'Adjust assumptions' }).click()
 
     const dimensions = await page.evaluate(() => ({
@@ -92,12 +92,10 @@ test.describe('live local handoff', () => {
     await page.route('**/lmstudio/v1/chat/completions', async (route) => {
       const body = route.request().postDataJSON() as { messages: Array<{ content: string }> }
       const system = body.messages[0].content
-      const evidenceId = system.includes('Harbor')
-        ? 'bls-software-outlook'
-        : system.includes('Aster')
-          ? 'carta-equity-liquidity'
-          : 'nsf-graduate-support'
+      const allowedEvidence = body.messages.at(-1)?.content.match(/ALLOWED EVIDENCE IDS\n([^\n]+)/)?.[1].split(', ') ?? []
+      const evidenceId = allowedEvidence[0]
       const advocate = {
+        optionLabel: system.includes('Harbor') ? 'Stay near home' : system.includes('Aster') ? 'Move for the opportunity' : 'Take a gap year',
         claim: { title: 'Grounded case', body: 'The retrieved evidence supports a conditional case.', evidenceIds: [evidenceId] },
         concession: { title: 'Important caveat', body: 'The path still depends on role quality.', evidenceIds: [] },
         ranges: [
@@ -107,14 +105,14 @@ test.describe('live local handoff', () => {
       }
       const vesper = {
         hidden: [
-          { title: 'Equity requires diligence', body: 'Private equity is not liquid income.', evidenceIds: ['carta-equity-liquidity'] },
-          { title: 'Funding requires diligence', body: 'Funding form and renewal terms matter.', evidenceIds: ['nsf-graduate-support'] },
+          { title: 'The change needs diligence', body: 'The imagined upside may differ from daily life.', evidenceIds: [allowedEvidence[0]] },
+          { title: 'The exploration needs boundaries', body: 'Time, cost, and re-entry conditions matter.', evidenceIds: [allowedEvidence[1] ?? allowedEvidence[0]] },
         ],
         mutations: [
-          { low: 8, mode: 27, high: 53, confidence: 0.36, reason: 'Startup floor reduced.', evidenceIds: ['carta-equity-liquidity'] },
-          { low: 50, mode: 75, high: 92, confidence: 0.41, reason: 'Startup upside widened.', evidenceIds: ['carta-equity-liquidity'] },
-          { low: 77, mode: 89, high: 97, confidence: 0.84, reason: 'Research depth supported.', evidenceIds: ['nsf-graduate-support'] },
-          { low: 69, mode: 82, high: 92, confidence: 0.85, reason: 'Research options supported.', evidenceIds: ['bls-software-outlook', 'nsf-graduate-support'] },
+          { low: 8, mode: 27, high: 53, confidence: 0.36, reason: 'Change-path floor reduced.', evidenceIds: [allowedEvidence[0]] },
+          { low: 50, mode: 75, high: 92, confidence: 0.41, reason: 'Change-path upside widened.', evidenceIds: [allowedEvidence[0]] },
+          { low: 77, mode: 89, high: 97, confidence: 0.84, reason: 'Exploration growth supported.', evidenceIds: [allowedEvidence[1] ?? allowedEvidence[0]] },
+          { low: 69, mode: 82, high: 92, confidence: 0.85, reason: 'Exploration options supported.', evidenceIds: [allowedEvidence[0]] },
         ],
       }
       await new Promise((resolve) => setTimeout(resolve, system.includes('Vesper') ? 350 : 700))
@@ -131,6 +129,6 @@ test.describe('live local handoff', () => {
 
     await expect(page.getByText(/drafting independent grounded memos/i).first()).toBeVisible()
     await expect(page.getByRole('textbox')).toHaveCount(0)
-    await expect(page.getByRole('heading', { name: /Choose funded AI research/i })).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByRole('heading', { name: /strongest current direction/i })).toBeVisible({ timeout: 10_000 })
   })
 })

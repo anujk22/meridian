@@ -1,7 +1,5 @@
 import { motion } from 'motion/react'
-import type { DecisionResults, OptionId } from '../domain/types'
-
-const shortNames: Record<OptionId, string> = { stable: 'Stable', startup: 'Startup', research: 'Research' }
+import type { DecisionResults } from '../domain/types'
 
 interface OutcomePanelProps {
   results: DecisionResults
@@ -17,13 +15,13 @@ export function OutcomePanel({ results, focused, controlsOpen, onTestAssumptions
     <aside className={`outcome-panel${focused ? ' is-focused' : ''}`} aria-label="Current decision lean">
       <div className="leader-readout" aria-live="polite">
         <span>Current lean</span>
-        <strong>{shortNames[leader.id]}, conditionally</strong>
+        <strong>{leader.label}, conditionally</strong>
       </div>
 
       <div className="scenario-shares">
         {results.options.map((option) => (
           <div className={`share-row share-row--${option.id}`} key={option.id}>
-            <div><span>{shortNames[option.id]}</span><strong>{option.share}%</strong></div>
+            <div><span>{option.label}</span><strong>{option.share}%</strong></div>
             <div className="share-track"><motion.i animate={{ width: `${option.share}%` }} transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }} /></div>
           </div>
         ))}

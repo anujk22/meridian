@@ -10,9 +10,9 @@ interface ControlDeckProps {
 }
 
 const sliderFactors: Array<{ key: FactorKey; label: string }> = [
-  { key: 'aiGrowth', label: 'AI Growth' },
+  { key: 'aiGrowth', label: 'Growth & Learning' },
   { key: 'financialFloor', label: 'Financial Floor' },
-  { key: 'ownershipUpside', label: 'Ownership' },
+  { key: 'ownershipUpside', label: 'Agency & Upside' },
 ]
 
 export function ControlDeck({ model, onMutation, onVerdict, leader, share, sensitivity }: ControlDeckProps) {
@@ -57,14 +57,14 @@ export function ControlDeck({ model, onMutation, onVerdict, leader, share, sensi
 
       <div className="control-deck__toggles">
         <Toggle
-          label="Master’s Fully Funded"
+          label="Exploration Path Is Affordable"
           checked={assumptions.toggles.mastersFunded}
-          onChange={(value) => onMutation({ kind: 'setToggle', toggle: 'mastersFunded', value, reason: 'User changed the funding assumption.' })}
+          onChange={(value) => onMutation({ kind: 'setToggle', toggle: 'mastersFunded', value, reason: 'User changed the affordability assumption.' })}
         />
         <Toggle
-          label="Startup Has Traction"
+          label="Change Path Has Strong Evidence"
           checked={assumptions.toggles.startupTraction}
-          onChange={(value) => onMutation({ kind: 'setToggle', toggle: 'startupTraction', value, reason: 'User changed the traction assumption.' })}
+          onChange={(value) => onMutation({ kind: 'setToggle', toggle: 'startupTraction', value, reason: 'User changed the evidence supporting the change path.' })}
         />
         <Toggle
           label="Need High Income Now"
@@ -72,9 +72,9 @@ export function ControlDeck({ model, onMutation, onVerdict, leader, share, sensi
           onChange={(value) => onMutation({ kind: 'setToggle', toggle: 'incomeNow', value, reason: 'User changed the immediate-income constraint.' })}
         />
         <Toggle
-          label="Prefer Building"
+          label="Prefer Greater Agency"
           checked={assumptions.toggles.preferBuilding}
-          onChange={(value) => onMutation({ kind: 'setToggle', toggle: 'preferBuilding', value, reason: 'User changed the ownership preference.' })}
+          onChange={(value) => onMutation({ kind: 'setToggle', toggle: 'preferBuilding', value, reason: 'User changed the agency preference.' })}
         />
       </div>
     </section>

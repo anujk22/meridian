@@ -8,32 +8,28 @@ import { BrandMark } from './BrandMark'
 import { CitationChip } from './CitationChip'
 
 const verdictCopy: Record<OptionId, {
-  condition: string
   why: string
   risk: string
   changes: string
   actions: string[]
 }> = {
   research: {
-    condition: 'Choose funded AI research, if the funding and lab access are real.',
-    why: 'Under the current priorities, it serves durable AI depth while preserving strong industry and research options.',
-    risk: 'Program quality is doing a great deal of work in this recommendation.',
-    changes: 'If funding disappears or immediate income becomes critical, the stable job becomes the cleaner call.',
-    actions: ['Verify the full funding package and renewal terms.', 'Speak with two current lab members about advisor access.', 'Compare placement into applied AI roles, not just program prestige.'],
+    why: 'Under the current priorities, structured exploration offers the strongest mix of growth, perspective, and future choice.',
+    risk: 'The value of this path depends on it being bounded, affordable, and connected to what comes afterward.',
+    changes: 'If immediate income or stability becomes critical, the continuity path becomes the cleaner call.',
+    actions: ['Define the time, budget, and stopping conditions.', 'Test the plan with people affected by the decision.', 'Write a concrete re-entry or next-step plan.'],
   },
   stable: {
-    condition: 'Choose the stable SWE role, then protect the AI trajectory deliberately.',
-    why: 'The financial floor now matters most, and the job preserves the safest path to independence.',
-    risk: 'A comfortable generalist role can quietly pull attention away from serious AI work.',
-    changes: 'If the master’s is truly funded or the startup proves exceptional traction, the lead can move.',
-    actions: ['Ask for concrete AI-team mobility and mentorship.', 'Map a twelve-month specialization plan before accepting.', 'Negotiate for projects that build durable technical depth.'],
+    why: 'Continuity currently protects the strongest combination of stability, relationships, and room to decide again later.',
+    risk: 'A familiar path can become inertia if it is chosen mainly to avoid uncertainty.',
+    changes: 'If the case for change becomes more concrete or the cost of waiting rises, the lead can move.',
+    actions: ['Name what staying protects and what it postpones.', 'Set a date to revisit the decision with new evidence.', 'Create one low-risk experiment that tests the alternative.'],
   },
   startup: {
-    condition: 'Choose the startup, if traction, runway, and ownership survive diligence.',
-    why: 'The current assumptions reward autonomy, learning velocity, and asymmetric upside.',
-    risk: 'Equity and role scope remain wide, low-confidence inputs rather than guaranteed value.',
-    changes: 'If traction weakens or downside tolerance falls, the stable job or funded research path leads.',
-    actions: ['Verify runway, revenue quality, and fundraising assumptions.', 'Model equity after dilution, exercise cost, and taxes.', 'Get role scope, mentorship, and decision rights in writing.'],
+    why: 'The current assumptions reward agency, momentum, and the possibility created by a meaningful change.',
+    risk: 'The upside is still partly an imagined future rather than a tested daily reality.',
+    changes: 'If the evidence for change weakens or downside tolerance falls, continuity or exploration can lead.',
+    actions: ['Verify the most important promise behind the change.', 'Model the financial, relationship, and wellbeing costs.', 'Find a reversible way to test the path before fully committing.'],
   },
 }
 
@@ -66,7 +62,7 @@ export function Verdict({ results, citations, onBack, onRestart }: { results: De
         </aside>
         <article className="verdict__brief">
           <p className="verdict__date">Meridian brief · {new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(new Date())}</p>
-          <h1>{copy.condition}</h1>
+          <h1>{leader.label} is the strongest current direction, conditionally.</h1>
           <p className="verdict__why">{copy.why}</p>
           <div className="verdict__logic">
             <div className="verdict__columns">
@@ -87,7 +83,7 @@ export function Verdict({ results, citations, onBack, onRestart }: { results: De
             {evidence.length > 0 && <section className="verdict__evidence"><span>Evidence carried forward</span><div>{evidence.map((chunk) => <CitationChip chunk={chunk} key={chunk.id} />)}</div></section>}
           </div>
           <section className="next-actions">
-            <span>Next three actions</span>
+            <span>Next three steps</span>
             <ol>{copy.actions.map((action) => <li key={action}>{action}</li>)}</ol>
           </section>
           <div className="verdict__footer">

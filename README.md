@@ -1,6 +1,6 @@
 # Meridian
 
-Meridian is an evidence-grounded, multi-agent career decision simulator. Its built-in demo turns a graduating CS student's job-versus-startup-versus-research decision into a transparent model with retrieval-augmented generation, independent perspective memos, adversarial review, uncertainty, live what-if controls, and a conditional verdict.
+Meridian is an evidence-grounded, multi-agent life-decision simulator. It helps people reason through choices about work, relationships, place, education, travel, timing, and other consequential changes. Its built-in move-versus-stay-versus-gap-year example becomes a transparent model with independent perspective memos, adversarial review, uncertainty, live what-if controls, and a conditional recommendation.
 
 ## Run
 
@@ -24,7 +24,7 @@ You can confirm LM Studio is reachable with:
 curl http://127.0.0.1:1234/v1/models
 ```
 
-The Vite localhost proxy sends live council generation to `/v1/chat/completions` and retrieval queries to `/v1/embeddings`. Live mode retrieves evidence first, runs Harbor, Aster, and Lumen as separate grounded calls, and then gives all three memos to Vesper for cross-examination. No prompt, result, or evidence leaves this machine. Curated mode remains available for a deterministic recording.
+The Vite localhost proxy sends live council generation to `/v1/chat/completions` and retrieval queries to `/v1/embeddings`. Live mode retrieves relevant evidence, runs Harbor, Aster, and Lumen as separate stability, possibility, and values perspectives, and then gives all three memos to Vesper for cross-examination. No prompt, result, or evidence leaves this machine. Curated mode remains available for a deterministic recording.
 
 - Recording mode: `http://127.0.0.1:4173/?recording=1`
 - Fast deterministic QA: `http://127.0.0.1:4173/?recording=1&speed=20`

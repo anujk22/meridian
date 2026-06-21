@@ -14,6 +14,7 @@ function result(chunk: EvidenceChunk): RetrievalResult {
 
 function memo(name: string, evidenceId: string) {
   return JSON.stringify({
+    optionLabel: `${name} path`,
     claim: { title: `${name} case`, body: `${name} makes a grounded case.`, evidenceIds: [evidenceId] },
     concession: { title: `${name} caveat`, body: `${name} acknowledges uncertainty.`, evidenceIds: [] },
     ranges: [
@@ -44,9 +45,9 @@ describe('grounded multi-agent council', () => {
     const events: string[] = []
     const calls: ChatMessage[][] = []
     const retrieve = vi.fn(async (query: string) => {
-      events.push(`retrieve:${query.includes('startup survival') ? 'startup' : query.includes('funded AI') ? 'research' : 'stable'}`)
-      if (query.includes('startup survival')) return result(startupEvidence)
-      if (query.includes('funded AI')) return result(researchEvidence)
+      events.push(`retrieve:${query.includes('major life change') ? 'change' : query.includes('personal values') ? 'values' : 'stability'}`)
+      if (query.includes('major life change')) return result(startupEvidence)
+      if (query.includes('personal values')) return result(researchEvidence)
       return result(stableEvidence)
     })
     const request: LocalChatRequest = vi.fn(async (messages) => {
@@ -69,7 +70,7 @@ describe('grounded multi-agent council', () => {
     })
     const progress: string[] = []
 
-    const scenario = await generateLiveScenario('Choose among three career paths.', 'test-model', {
+    const scenario = await generateLiveScenario('Choose among three life paths.', 'test-model', {
       retrieve,
       request,
       onProgress: ({ stage }) => progress.push(stage),
@@ -88,6 +89,7 @@ describe('grounded multi-agent council', () => {
     expect(calls[3][1].content).toContain('Aster case')
     expect(calls[3][1].content).toContain('Lumen case')
     expect(scenario.claims).toHaveLength(6)
+    expect(scenario.optionLabels).toEqual({ stable: 'Harbor path', startup: 'Aster path', research: 'Lumen path' })
     expect(scenario.mutations).toHaveLength(4)
     expect(scenario.citations['stable-floor'].chunks).toEqual([stableEvidence])
     expect(progress).toContain('retrieving')
@@ -103,8 +105,8 @@ describe('grounded multi-agent council', () => {
   it('uses an isolated formatter when an advocate returns the wrong shape', async () => {
     const calls: ChatMessage[][] = []
     const retrieve = async (query: string) => {
-      if (query.includes('startup survival')) return result(startupEvidence)
-      if (query.includes('funded AI')) return result(researchEvidence)
+      if (query.includes('major life change')) return result(startupEvidence)
+      if (query.includes('personal values')) return result(researchEvidence)
       return result(stableEvidence)
     }
     const request: LocalChatRequest = async (messages) => {
@@ -117,7 +119,7 @@ describe('grounded multi-agent council', () => {
       return review()
     }
 
-    const scenario = await generateLiveScenario('Choose among three career paths.', 'test-model', { retrieve, request })
+    const scenario = await generateLiveScenario('Choose among three life paths.', 'test-model', { retrieve, request })
     const formatterCall = calls.find(([message]) => message.content.includes('strict JSON normalizer'))
 
     expect(formatterCall).toHaveLength(2)

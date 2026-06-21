@@ -45,14 +45,14 @@ function councilPhase(phase: keyof typeof phaseLabels): 1 | 2 | 3 {
 function mutationTitle(mutation: ModelMutation): string {
   if (mutation.kind === 'setRisk') return `Risk tolerance set to ${Math.round(mutation.value * 100)}`
   if (mutation.kind === 'setHorizon') return `Time horizon set to ${mutation.value} years`
-  if (mutation.kind === 'setWeight') return `${mutation.factor === 'aiGrowth' ? 'AI growth' : mutation.factor === 'financialFloor' ? 'Financial floor' : 'Ownership'} weight changed`
+  if (mutation.kind === 'setWeight') return `${mutation.factor === 'aiGrowth' ? 'Growth and learning' : mutation.factor === 'financialFloor' ? 'Financial floor' : 'Agency and upside'} weight changed`
   if (mutation.kind === 'setToggle') {
     const labels = {
-      mastersFunded: 'Master’s funding',
-      startupTraction: 'Startup traction',
+      mastersFunded: 'Exploration affordability',
+      startupTraction: 'Evidence for change',
       incomeNow: 'Immediate income need',
       willingToRelocate: 'Relocation flexibility',
-      preferBuilding: 'Building preference',
+      preferBuilding: 'Agency preference',
     }
     return `${labels[mutation.toggle]} ${mutation.value ? 'enabled' : 'disabled'}`
   }
@@ -63,6 +63,19 @@ function mutationKey(mutation: ModelMutation): string {
   if (mutation.kind === 'setWeight') return `user-weight-${mutation.factor}`
   if (mutation.kind === 'setToggle') return `user-toggle-${mutation.toggle}`
   return `user-${mutation.kind}`
+}
+
+function createScenarioModel(scenario: LiveScenario | null) {
+  const model = createInitialModel()
+  if (!scenario) return model
+  return {
+    ...model,
+    options: model.options.map((option) => ({
+      ...option,
+      label: scenario.optionLabels[option.id],
+      shortLabel: scenario.optionLabels[option.id],
+    })),
+  }
 }
 
 export function App() {
@@ -77,7 +90,7 @@ export function App() {
   const [generating, setGenerating] = useState(false)
   const [liveError, setLiveError] = useState<string | null>(null)
   const [liveEntryState, setLiveEntryState] = useState<'idle' | 'preparing' | 'error'>('idle')
-  const [liveProgress, setLiveProgress] = useState('Reading the career decision')
+  const [liveProgress, setLiveProgress] = useState('Reading the decision')
   const [liveScenario, setLiveScenario] = useState<LiveScenario | null>(null)
   const [guided, setGuided] = useState(true)
   const [controlsOpen, setControlsOpen] = useState(false)
@@ -162,7 +175,7 @@ export function App() {
     let generated: LiveScenario | null = null
     if (mode === 'live') {
       setLiveEntryState('preparing')
-      setLiveProgress('Reading the career decision')
+      setLiveProgress('Reading the decision')
       setGenerating(true)
       try {
         const available = await refreshLocalModels()
@@ -188,7 +201,7 @@ export function App() {
     mutationCursorRef.current = 0
     presentedBriefRef.current = false
     setLiveScenario(generated)
-    setModel(createInitialModel())
+    setModel(createScenarioModel(generated))
     setCitations(generated?.citations ?? {})
     setControlsOpen(false)
     setLiveEntryState('idle')
@@ -202,7 +215,7 @@ export function App() {
     presentedBriefRef.current = false
     setControlsOpen(false)
     setLiveError(null)
-    setLiveProgress('Reading the career decision')
+    setLiveProgress('Reading the decision')
     setLiveEntryState('idle')
     dispatchDemo({ type: 'reset' })
   }, [])
@@ -274,7 +287,7 @@ export function App() {
         <BrandMark compact />
         <div className="phase-readout">
           <span><i /> {showingLiveEntry ? 'Live Council Preparation' : 'Council Deliberation'}</span>
-          <small>{showingLiveEntry ? (liveEntryState === 'error' ? 'Council Needs Attention' : 'Reading the Career Decision') : `${phaseLabels[displayedPhase]} · Phase ${activeCouncilPhase} of 3`}</small>
+          <small>{showingLiveEntry ? (liveEntryState === 'error' ? 'Council Needs Attention' : 'Reading the Decision') : `${phaseLabels[displayedPhase]} · Phase ${activeCouncilPhase} of 3`}</small>
         </div>
         <div className="instrument-rail__status">
           {!recording && demo.running && (

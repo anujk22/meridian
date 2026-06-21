@@ -8,10 +8,10 @@ interface AgentCouncilProps {
 }
 
 const personas = {
-  stableAdvocate: 'Pragmatist',
-  startupAdvocate: 'Builder',
-  researchAdvocate: 'Scholar',
-  skeptic: 'Contrarian',
+  stableAdvocate: 'Stability lens',
+  startupAdvocate: 'Possibility lens',
+  researchAdvocate: 'Values lens',
+  skeptic: 'Challenge lens',
 }
 
 export function AgentCouncil({ activeAgent, challengedAgent }: AgentCouncilProps) {

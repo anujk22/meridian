@@ -6,7 +6,7 @@ product
 
 ## Users
 
-Meridian is built for people facing high-stakes education and career choices, and for hackathon judges evaluating whether an AI product produces inspectable reasoning rather than a polished answer. The primary judged user is a graduating computer-science student comparing a stable software role, an early AI startup, and a funded AI research program.
+Meridian is built for people facing consequential life choices—including decisions about work, relationships, place, education, travel, family, and personal timing—and for hackathon judges evaluating whether an AI product produces inspectable reasoning rather than a polished answer. The prepared example follows someone deciding whether to move for work, stay near the people and routines they value, or take a gap year to travel.
 
 ## Product Purpose
 

@@ -19,13 +19,13 @@ interface IntakeProps {
   error: string | null
 }
 
-const exampleDecision = 'I’m choosing between a stable SWE role, joining a friend’s early AI startup, or pursuing a funded AI research program. I want deep AI skills, financial independence, and choices I won’t regret in five years.'
+const exampleDecision = 'Should I move to a new city for a promising job, stay near the people and routines I value, or take a gap year to travel? I care about growth, financial stability, my relationships, and what each choice makes possible later.'
 
 const councilMembers = [
-  { id: 'stableAdvocate' as const, name: 'Harbor', shortRole: 'Floor', role: 'Protects the financial floor', probe: 'Income security' },
-  { id: 'startupAdvocate' as const, name: 'Aster', shortRole: 'Upside', role: 'Tests asymmetric upside', probe: 'Ownership value' },
-  { id: 'researchAdvocate' as const, name: 'Lumen', shortRole: 'Evidence', role: 'Maps durable AI depth', probe: 'Learning depth' },
-  { id: 'skeptic' as const, name: 'Vesper', shortRole: 'Challenge', role: 'Challenges the story', probe: 'Hidden assumptions' },
+  { id: 'stableAdvocate' as const, name: 'Harbor', shortRole: 'Stability', role: 'Protects what already works', probe: 'Security & continuity' },
+  { id: 'startupAdvocate' as const, name: 'Aster', shortRole: 'Possibility', role: 'Tests the case for change', probe: 'Agency & upside' },
+  { id: 'researchAdvocate' as const, name: 'Lumen', shortRole: 'Values', role: 'Maps growth and long-term fit', probe: 'Meaning & learning' },
+  { id: 'skeptic' as const, name: 'Vesper', shortRole: 'Challenge', role: 'Challenges the whole story', probe: 'Hidden assumptions' },
 ]
 
 type ViewTransitionDocument = Document & {
@@ -100,9 +100,9 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
             />
 
             <div className="decision-brief__signals" aria-label="Scenario paths">
-              <span className="signal-path signal-path--stable"><i />Stable SWE</span>
-              <span className="signal-path signal-path--startup"><i />Early AI startup</span>
-              <span className="signal-path signal-path--research"><i />Funded research</span>
+              <span className="signal-path signal-path--stable"><i />Work & money</span>
+              <span className="signal-path signal-path--startup"><i />People & place</span>
+              <span className="signal-path signal-path--research"><i />Growth & wellbeing</span>
             </div>
 
             {!recording && (
