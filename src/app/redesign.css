@@ -826,6 +826,7 @@ input[type='range']::-webkit-slider-thumb { border-color: var(--surface-solid); 
 .atlas-globe.is-preparing::before { box-shadow: 0 0 72px oklch(0.58 0.2 257 / 0.34); }
 .meridian-core__svg { position: relative; z-index: 1; display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 16px 26px oklch(0.48 0.15 257 / 0.12)); }
 .meridian-core__glass { stroke: oklch(0.77 0.1 250 / 0.55); stroke-width: 1; }
+html[data-theme='dark'] .meridian-core__glass { fill: transparent; }
 .meridian-core__rim { fill: none; stroke: oklch(0.55 0.21 257 / 0.82); stroke-width: 2; }
 .meridian-core__grid { fill: none; stroke: oklch(0.56 0.14 257 / 0.16); stroke-width: 0.8; stroke-dasharray: 2 6; }
 .meridian-core__grid--inner { stroke-dasharray: none; opacity: 0.45; }
