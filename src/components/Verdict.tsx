@@ -58,7 +58,10 @@ export function Verdict({ results, citations, onBack, onRestart }: { results: De
           <strong>{leader.label}</strong>
           <div className="verdict__share">{leader.share}<small>%</small></div>
           <p>of simulated scenarios under current assumptions</p>
-          <div className="verdict__ranges"><span>Floor {Math.round(leader.floor)}</span><span>Ceiling {Math.round(leader.ceiling)}</span></div>
+          <div className="verdict__ranges">
+            <span><small>Floor</small><strong>{Math.round(leader.floor)}</strong></span>
+            <span><small>Ceiling</small><strong>{Math.round(leader.ceiling)}</strong></span>
+          </div>
         </aside>
         <article className="verdict__brief">
           <p className="verdict__date">Meridian brief · {new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(new Date())}</p>
