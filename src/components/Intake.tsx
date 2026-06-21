@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { AgentGlyph } from './AgentGlyph'
 import { AtlasGlobe } from './AtlasGlobe'
@@ -22,151 +22,222 @@ interface IntakeProps {
   onThemeToggle: () => void
 }
 
+const exampleDecision = 'I’m choosing between a stable SWE role, joining a friend’s early AI startup, or pursuing a funded AI research program. I want deep AI skills, financial independence, and choices I won’t regret in five years.'
+
 const councilMembers = [
-  { id: 'stableAdvocate' as const, name: 'Harbor', orbitRole: 'Protects the floor' },
-  { id: 'startupAdvocate' as const, name: 'Aster', orbitRole: 'Tests the upside' },
-  { id: 'researchAdvocate' as const, name: 'Lumen', orbitRole: 'Checks evidence' },
-  { id: 'skeptic' as const, name: 'Vesper', orbitRole: 'Challenges assumptions' },
+  { id: 'stableAdvocate' as const, name: 'Harbor', shortRole: 'Floor', role: 'Protects the financial floor', probe: 'Income security' },
+  { id: 'startupAdvocate' as const, name: 'Aster', shortRole: 'Upside', role: 'Tests asymmetric upside', probe: 'Ownership value' },
+  { id: 'researchAdvocate' as const, name: 'Lumen', shortRole: 'Evidence', role: 'Maps durable AI depth', probe: 'Learning depth' },
+  { id: 'skeptic' as const, name: 'Vesper', shortRole: 'Challenge', role: 'Challenges the story', probe: 'Hidden assumptions' },
 ]
+
+const phaseSteps = [
+  { number: '01', label: 'Frame decision', status: 'Active' },
+  { number: '02', label: 'Council deliberation', status: 'Queued' },
+  { number: '03', label: 'Test assumptions', status: 'Queued' },
+]
+
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (callback: () => void) => void
+}
 
 export function Intake({ prompt, onPromptChange, onStart, recording, mode, onModeChange, models, selectedModel, onModelChange, loadingModels, generating, error, theme, onThemeToggle }: IntakeProps) {
   const promptRef = useRef<HTMLTextAreaElement>(null)
   const reduceMotion = useReducedMotion()
-  const startDisabled = !prompt.trim() || generating || (mode === 'live' && !selectedModel)
+  const [composerFocused, setComposerFocused] = useState(false)
+  const hasDecision = Boolean(prompt.trim())
+  const startDisabled = !hasDecision || generating || (mode === 'live' && !selectedModel)
 
-  const focusComposer = () => {
-    promptRef.current?.focus()
-    promptRef.current?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' })
+  const launchCouncil = () => {
+    if (startDisabled) return
+    const transitionDocument = document as ViewTransitionDocument
+    if (!reduceMotion && transitionDocument.startViewTransition) {
+      transitionDocument.startViewTransition(onStart)
+      return
+    }
+    onStart()
   }
 
   return (
-    <main className="intake-shell">
-      <header className="intake-header">
-        <BrandMark />
-        <ThemeToggle theme={theme} onToggle={onThemeToggle} />
+    <main className={`intake-shell phase-zero${composerFocused ? ' is-composing' : ''}${hasDecision ? ' has-decision' : ''}`}>
+      <div className="phase-zero__field" aria-hidden="true"><span /><i /><b /></div>
+
+      <header className="intake-rail">
+        <BrandMark compact />
+        <div className="intake-rail__readout">
+          <span><i /> Decision Observatory</span>
+          <small>Frame the decision · Phase 1 of 3</small>
+        </div>
+        <div className="intake-rail__actions">
+          <span className="local-status"><i /> Local &amp; private</span>
+          <ThemeToggle theme={theme} onToggle={onThemeToggle} />
+        </div>
       </header>
 
-      <section className="intake-content">
-        <motion.div
-          className="intake-copy"
-          initial={reduceMotion ? false : { opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.68, ease: [0.16, 1, 0.3, 1] }}
+      <nav className="intake-phase-stepper" aria-label="Decision process">
+        {phaseSteps.map((step, index) => (
+          <div className={`intake-phase-step${index === 0 ? ' is-active' : ''}`} key={step.number}>
+            <span>{step.number}</span>
+            <div><strong>{step.label}</strong><small>{step.status}</small></div>
+          </div>
+        ))}
+      </nav>
+
+      <div className="phase-zero__stage">
+        <motion.section
+          className="briefing-bay"
+          initial={reduceMotion ? false : { opacity: 0, x: -18 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.62, ease: [0.16, 1, 0.3, 1] }}
+          aria-labelledby="intake-title"
         >
-          <p className="intake-kicker">Four-agent decision council</p>
-          <h1>See the full shape<br />of your decision.</h1>
-          <p className="intake-lede">
-            Meridian convenes four distinct perspectives around one choice, surfacing tradeoffs, challenging assumptions, attaching evidence, and revealing what could change the recommendation.
+          <div className="briefing-bay__marker">
+            <span>01</span>
+            <div><strong>Frame the decision</strong><small>Give the council one consequential choice</small></div>
+          </div>
+
+          <h1 id="intake-title">Simulate the paths<br />your life could take.</h1>
+          <p className="briefing-bay__lede">
+            Meridian turns one consequential choice into a four-agent simulation, mapping the downside, testing the upside, challenging the story, and showing what could change the outcome.
           </p>
-          <div className="intake-paths" aria-label="Paths compared">
-            <span>Stable SWE</span><i /> <span>Early AI startup</span><i /> <span>Funded research</span>
-          </div>
-          <div className="intake-actions">
-            <motion.button
-              className="primary-button intake-hero-cta"
-              type="button"
-              onClick={onStart}
-              disabled={startDisabled}
-              whileTap={{ scale: 0.985 }}
-            >
-              {generating ? 'Assembling council…' : 'Convene my council'}
-              <span aria-hidden="true">→</span>
-            </motion.button>
-            <button className="ghost-button intake-own-decision" type="button" onClick={focusComposer}>
-              Enter my own decision
-              <span aria-hidden="true">↘</span>
-            </button>
-          </div>
-        </motion.div>
 
-        <motion.div
-          className="intake-preview council-orbit"
-          initial={reduceMotion ? false : { opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.72, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
-          aria-label="Four-agent council orbiting the Meridian Decision Atlas"
-        >
-          <div className="council-orbit__stage">
-            <svg className="council-orbit__map" viewBox="0 0 640 640" aria-hidden="true">
-              <circle cx="320" cy="320" r="214" />
-              <circle cx="320" cy="320" r="158" />
-              <circle className="is-dashed" cx="320" cy="320" r="108" />
-              <path d="M106 320H534M320 106V534" />
-              <path className="is-faint" d="M169 169 471 471M471 169 169 471" />
-              <g className="council-orbit__ticks">
-                <circle cx="320" cy="106" r="3" /><circle cx="534" cy="320" r="3" />
-                <circle cx="320" cy="534" r="3" /><circle cx="106" cy="320" r="3" />
-                <circle cx="169" cy="169" r="2.5" /><circle cx="471" cy="169" r="2.5" />
-                <circle cx="471" cy="471" r="2.5" /><circle cx="169" cy="471" r="2.5" />
-              </g>
-            </svg>
-            <AtlasGlobe compact active />
-            {councilMembers.map((agent, index) => (
-              <div className={`orbit-agent orbit-agent--${agent.id}`} key={agent.id}>
-                <motion.div
-                  className="orbit-agent__motion"
-                  initial={reduceMotion ? false : { opacity: 0, scale: 0.72 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.54, delay: 0.22 + index * 0.08, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <span className="orbit-agent__portrait"><AgentGlyph agentId={agent.id} /></span>
-                  <span className="orbit-agent__copy">
-                    <strong>{agent.name}</strong>
-                    <small>{agent.orbitRole}</small>
-                  </span>
-                </motion.div>
+          <form
+            className="decision-brief"
+            onSubmit={(event) => {
+              event.preventDefault()
+              launchCouncil()
+            }}
+          >
+            <div className="decision-brief__heading">
+              <div>
+                <span>Decision brief</span>
+                <strong>Describe the decision you want to simulate</strong>
               </div>
-            ))}
-          </div>
-        </motion.div>
+              <small className={hasDecision ? 'is-ready' : ''}><i />{hasDecision ? 'Brief ready' : 'Awaiting input'}</small>
+            </div>
 
-        <motion.div
-          className="intake-instrument"
-          initial={reduceMotion ? false : { opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.62, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <div className="intake-instrument__heading">
-            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.8 3.2 16.8 7.2 7.4 16.6 3.2 16.8 3.4 12.6 12.8 3.2ZM11.4 4.6 15.4 8.6" /></svg>
-            <strong>Describe your career decision</strong>
-          </div>
-          <label className="sr-only" htmlFor="decision-prompt">Describe the career decision you are weighing</label>
-          <textarea
-            ref={promptRef}
-            id="decision-prompt"
-            value={prompt}
-            onChange={(event) => onPromptChange(event.target.value)}
-            maxLength={520}
-            rows={4}
-            placeholder="Describe the tradeoffs, constraints, and what matters over the next five years."
-          />
-          <div className="intake-instrument__footer">
+            <label className="sr-only" htmlFor="decision-prompt">Describe the decision you want to simulate</label>
+            <textarea
+              ref={promptRef}
+              id="decision-prompt"
+              value={prompt}
+              onChange={(event) => onPromptChange(event.target.value)}
+              onFocus={() => setComposerFocused(true)}
+              onBlur={() => setComposerFocused(false)}
+              maxLength={520}
+              rows={5}
+              placeholder="Name the paths, what matters, and the constraints the council should respect."
+            />
+
+            <div className="decision-brief__signals" aria-label="Scenario paths">
+              <span className="signal-path signal-path--stable"><i />Stable SWE</span>
+              <span className="signal-path signal-path--startup"><i />Early AI startup</span>
+              <span className="signal-path signal-path--research"><i />Funded research</span>
+            </div>
+
             {!recording && (
-              <div className="intake-mode-panel">
-                <div className="mode-switch" aria-label="Reasoning mode">
-                  <button type="button" className={mode === 'curated' ? 'is-active' : ''} onClick={() => onModeChange('curated')}>Curated council</button>
-                  <button type="button" className={mode === 'live' ? 'is-active' : ''} onClick={() => onModeChange('live')}>Live local</button>
-                </div>
-                {mode === 'live' && (
-                  <label className="model-picker">
-                    <span>LM Studio model</span>
-                    <select value={selectedModel} onChange={(event) => onModelChange(event.target.value)} disabled={loadingModels || models.length === 0}>
-                      {models.length > 0 ? models.map((model) => <option key={model} value={model}>{model}</option>) : <option>{loadingModels ? 'Discovering loaded models…' : 'No chat model loaded'}</option>}
-                    </select>
-                  </label>
-                )}
+              <div className="run-mode" aria-label="Council run mode">
+                <span>Run mode</span>
+                <button type="button" className={mode === 'curated' ? 'is-active' : ''} aria-pressed={mode === 'curated'} onClick={() => onModeChange('curated')}>
+                  <strong>Prepared council</strong><small>Fast, repeatable demonstration</small>
+                </button>
+                <button type="button" className={mode === 'live' ? 'is-active' : ''} aria-pressed={mode === 'live'} onClick={() => onModeChange('live')}>
+                  <strong>Local model</strong><small>Private generation in LM Studio</small>
+                </button>
               </div>
             )}
-            <span className="character-count">{prompt.length}/520</span>
-            <button className="primary-button" type="button" onClick={onStart} disabled={startDisabled}>
-              {generating ? 'Assembling council…' : 'Run council'}
-              <span aria-hidden="true">→</span>
-            </button>
-          </div>
-          {error && <p className="intake-error" role="alert">{error}</p>}
-        </motion.div>
 
-      </section>
+            {mode === 'live' && !recording && (
+              <label className="decision-model-picker">
+                <span>LM Studio model</span>
+                <select value={selectedModel} onChange={(event) => onModelChange(event.target.value)} disabled={loadingModels || models.length === 0}>
+                  {models.length > 0 ? models.map((model) => <option key={model} value={model}>{model}</option>) : <option>{loadingModels ? 'Discovering loaded models…' : 'No chat model loaded'}</option>}
+                </select>
+              </label>
+            )}
+
+            <div className="decision-brief__footer">
+              <button className="example-decision" type="button" onClick={() => {
+                onPromptChange(exampleDecision)
+                promptRef.current?.focus()
+              }}>
+                <span aria-hidden="true">↺</span> Use example decision
+              </button>
+              <span className="decision-count">{prompt.length}/520</span>
+              <motion.button className="convene-button" type="submit" disabled={startDisabled} whileTap={{ scale: 0.985 }}>
+                <span>{generating ? 'Assembling council…' : 'Convene council'}</span>
+                <i aria-hidden="true">→</i>
+              </motion.button>
+            </div>
+            {error && <p className="intake-error" role="alert">{error}</p>}
+          </form>
+        </motion.section>
+
+        <motion.section
+          className="council-standby"
+          initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.72, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+          aria-labelledby="standby-title"
+        >
+          <div className="council-standby__heading">
+            <div><span><i /> Council standing by</span><strong id="standby-title">Four perspectives. One decision model.</strong></div>
+            <small>{mode === 'live' ? 'Local generation' : 'Prepared scenario'}</small>
+          </div>
+
+          <div className="standby-stage">
+            <svg className="standby-stage__map" viewBox="0 0 640 640" aria-hidden="true">
+              <circle className="standby-ring standby-ring--outer" cx="320" cy="320" r="224" />
+              <circle className="standby-ring standby-ring--middle" cx="320" cy="320" r="165" />
+              <circle className="standby-ring standby-ring--inner" cx="320" cy="320" r="112" />
+              <path className="standby-axis" d="M96 320H544M320 96V544" />
+              <path className="standby-axis standby-axis--faint" d="M162 162 478 478M478 162 162 478" />
+              <path className={`standby-beam standby-beam--harbor${hasDecision ? ' is-ready' : ''}`} d="M320 96V320" />
+              <path className={`standby-beam standby-beam--aster${hasDecision ? ' is-ready' : ''}`} d="M544 320H320" />
+              <path className={`standby-beam standby-beam--lumen${hasDecision ? ' is-ready' : ''}`} d="M96 320H320" />
+              <path className={`standby-beam standby-beam--vesper${hasDecision ? ' is-ready' : ''}`} d="M320 544V320" />
+              <g className="standby-ticks">
+                <circle cx="320" cy="96" r="3" /><circle cx="544" cy="320" r="3" />
+                <circle cx="320" cy="544" r="3" /><circle cx="96" cy="320" r="3" />
+                <circle cx="162" cy="162" r="2.5" /><circle cx="478" cy="162" r="2.5" />
+                <circle cx="478" cy="478" r="2.5" /><circle cx="162" cy="478" r="2.5" />
+              </g>
+            </svg>
+
+            <motion.div
+              className="standby-atlas intake-atlas-transition"
+              initial={false}
+              animate={{ x: '-50%', y: '-50%', scale: composerFocused && !reduceMotion ? 1.025 : 1 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <AtlasGlobe compact active={hasDecision} />
+              <div className="standby-atlas__status"><span>Decision Atlas</span><strong>{hasDecision ? 'Brief signal acquired' : 'Awaiting decision brief'}</strong></div>
+            </motion.div>
+
+            {councilMembers.map((agent, index) => (
+              <motion.article
+                className={`standby-agent standby-agent--${agent.id}`}
+                key={agent.id}
+                initial={reduceMotion ? false : { opacity: 0, scale: 0.75 }}
+                animate={{ x: '-50%', y: '-50%', opacity: hasDecision ? 1 : 0.76, scale: hasDecision ? 1 : 0.94 }}
+                transition={{ duration: 0.48, delay: reduceMotion ? 0 : 0.22 + index * 0.07, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <span className="standby-agent__portrait"><AgentGlyph agentId={agent.id} active={hasDecision} /></span>
+                <span className="standby-agent__copy"><small>{agent.shortRole}</small><strong>{agent.name}</strong><span>{agent.role}</span></span>
+              </motion.article>
+            ))}
+
+            {councilMembers.map((agent) => (
+              <span className={`standby-probe standby-probe--${agent.id}`} key={`${agent.id}-probe`}><i />{agent.probe}</span>
+            ))}
+          </div>
+
+          <div className="council-protocol">
+            <div><span>Protocol</span><strong>Independent memos → cross-examination → synthesis</strong></div>
+            <small><i /> 4 agents <i /> evidence retrieval <i /> assumption ledger</small>
+          </div>
+        </motion.section>
+      </div>
     </main>
   )
 }
