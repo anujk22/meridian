@@ -23,10 +23,10 @@ interface IntakeProps {
 }
 
 const councilMembers = [
-  { id: 'stableAdvocate' as const, name: 'Harbor', orbitRole: 'Protects the floor', railRole: 'Risk & safety' },
-  { id: 'startupAdvocate' as const, name: 'Aster', orbitRole: 'Tests the upside', railRole: 'Upside & momentum' },
-  { id: 'researchAdvocate' as const, name: 'Lumen', orbitRole: 'Checks evidence', railRole: 'Evidence & depth' },
-  { id: 'skeptic' as const, name: 'Vesper', orbitRole: 'Challenges assumptions', railRole: 'Stress test' },
+  { id: 'stableAdvocate' as const, name: 'Harbor', orbitRole: 'Protects the floor' },
+  { id: 'startupAdvocate' as const, name: 'Aster', orbitRole: 'Tests the upside' },
+  { id: 'researchAdvocate' as const, name: 'Lumen', orbitRole: 'Checks evidence' },
+  { id: 'skeptic' as const, name: 'Vesper', orbitRole: 'Challenges assumptions' },
 ]
 
 export function Intake({ prompt, onPromptChange, onStart, recording, mode, onModeChange, models, selectedModel, onModelChange, loadingModels, generating, error, theme, onThemeToggle }: IntakeProps) {
@@ -166,20 +166,6 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
           {error && <p className="intake-error" role="alert">{error}</p>}
         </motion.div>
 
-        <motion.div
-          className="intake-council-rail"
-          initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.54, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          aria-label="Council members"
-        >
-          {councilMembers.map((agent) => (
-            <div className={`intake-council-rail__agent intake-council-rail__agent--${agent.id}`} key={agent.id}>
-              <AgentGlyph agentId={agent.id} />
-              <span><strong>{agent.name}</strong><small>{agent.railRole}</small></span>
-            </div>
-          ))}
-        </motion.div>
       </section>
     </main>
   )
