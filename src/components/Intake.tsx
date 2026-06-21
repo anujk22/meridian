@@ -31,12 +31,6 @@ const councilMembers = [
   { id: 'skeptic' as const, name: 'Vesper', shortRole: 'Challenge', role: 'Challenges the story', probe: 'Hidden assumptions' },
 ]
 
-const phaseSteps = [
-  { number: '01', label: 'Frame decision', status: 'Active' },
-  { number: '02', label: 'Council deliberation', status: 'Queued' },
-  { number: '03', label: 'Test assumptions', status: 'Queued' },
-]
-
 type ViewTransitionDocument = Document & {
   startViewTransition?: (callback: () => void) => void
 }
@@ -64,24 +58,11 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
 
       <header className="intake-rail">
         <BrandMark compact />
-        <div className="intake-rail__readout">
-          <span><i /> Decision Observatory</span>
-          <small>Frame the decision · Phase 1 of 3</small>
-        </div>
         <div className="intake-rail__actions">
           <span className="local-status"><i /> Local &amp; private</span>
           <ThemeToggle theme={theme} onToggle={onThemeToggle} />
         </div>
       </header>
-
-      <nav className="intake-phase-stepper" aria-label="Decision process">
-        {phaseSteps.map((step, index) => (
-          <div className={`intake-phase-step${index === 0 ? ' is-active' : ''}`} key={step.number}>
-            <span>{step.number}</span>
-            <div><strong>{step.label}</strong><small>{step.status}</small></div>
-          </div>
-        ))}
-      </nav>
 
       <div className="phase-zero__stage">
         <motion.section
@@ -91,12 +72,8 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
           transition={{ duration: 0.62, ease: [0.16, 1, 0.3, 1] }}
           aria-labelledby="intake-title"
         >
-          <div className="briefing-bay__marker">
-            <span>01</span>
-            <div><strong>Frame the decision</strong><small>Give the council one consequential choice</small></div>
-          </div>
-
-          <h1 id="intake-title">Simulate the paths<br />your life could take.</h1>
+          <h1 className="meridian-display" id="intake-title" data-word="MERIDIAN">MERIDIAN</h1>
+          <p className="meridian-thesis">Simulate the paths your life could take.</p>
           <p className="briefing-bay__lede">
             Meridian turns one consequential choice into a four-agent simulation, mapping the downside, testing the upside, challenging the story, and showing what could change the outcome.
           </p>
@@ -178,13 +155,8 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
           initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.72, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
-          aria-labelledby="standby-title"
+          aria-label="Four-agent council preview"
         >
-          <div className="council-standby__heading">
-            <div><span><i /> Council standing by</span><strong id="standby-title">Four perspectives. One decision model.</strong></div>
-            <small>{mode === 'live' ? 'Local generation' : 'Prepared scenario'}</small>
-          </div>
-
           <div className="standby-stage">
             <svg className="standby-stage__map" viewBox="0 0 640 640" aria-hidden="true">
               <circle className="standby-ring standby-ring--outer" cx="320" cy="320" r="224" />

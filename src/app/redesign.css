@@ -1605,7 +1605,7 @@ html[data-theme='dark'] .phase-zero {
   position: relative;
   z-index: 10;
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr auto;
   align-items: center;
   height: 64px;
   padding: 0 clamp(24px, 2.8vw, 48px);
@@ -1717,10 +1717,10 @@ html[data-theme='dark'] .phase-zero {
   gap: clamp(30px, 4vw, 76px);
   align-items: center;
   width: min(1760px, calc(100% - clamp(48px, 5vw, 96px)));
-  height: calc(100dvh - 122px);
-  min-height: 598px;
+  height: calc(100dvh - 64px);
+  min-height: 656px;
   margin: 0 auto;
-  padding: 14px 0 26px;
+  padding: 26px 0 34px;
 }
 
 .briefing-bay {
@@ -1762,9 +1762,57 @@ html[data-theme='dark'] .phase-zero {
   line-height: 0.99;
 }
 
+.briefing-bay h1.meridian-display {
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  max-width: none;
+  color: var(--ink);
+  font-size: clamp(4.7rem, min(6.5vw, 10dvh), 7.8rem);
+  font-weight: 510;
+  letter-spacing: -0.085em;
+  line-height: 0.82;
+  white-space: nowrap;
+  text-shadow: 0 0 54px color-mix(in oklch, var(--polar) 11%, transparent);
+}
+
+.meridian-display::before {
+  content: '';
+  position: absolute;
+  left: -0.03em;
+  right: -0.1em;
+  top: 54%;
+  z-index: -1;
+  height: 1px;
+  background: color-mix(in oklch, var(--polar) 32%, transparent);
+  box-shadow: 0 0 12px color-mix(in oklch, var(--polar) 22%, transparent);
+}
+
+.meridian-display::after {
+  content: attr(data-word);
+  position: absolute;
+  left: 0.065em;
+  top: 0.075em;
+  z-index: -2;
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in oklch, var(--polar) 28%, transparent);
+  text-shadow: none;
+}
+
+.meridian-thesis {
+  max-width: 520px;
+  margin-top: 26px;
+  color: var(--ink);
+  font-family: 'Sora Variable', sans-serif;
+  font-size: clamp(1.22rem, 1.65vw, 1.58rem);
+  font-weight: 440;
+  letter-spacing: -0.025em;
+  line-height: 1.16;
+}
+
 .briefing-bay__lede {
   max-width: 690px;
-  margin-top: 18px;
+  margin-top: 12px;
   color: var(--ink-soft);
   font-size: 0.9rem;
   line-height: 1.52;
@@ -1996,7 +2044,7 @@ html[data-theme='dark'] .phase-zero {
 .standby-stage {
   position: absolute;
   left: 50%;
-  top: 49%;
+  top: 50%;
   width: min(650px, 94cqh, 47vw);
   aspect-ratio: 1;
   container-type: size;
@@ -2160,23 +2208,21 @@ html[data-theme='dark'] .phase-zero {
 @media (max-height: 820px) and (min-width: 1001px) {
   .phase-zero { min-height: 650px; }
   .intake-rail { height: 58px; }
-  .intake-phase-stepper { height: 50px; }
-  .phase-zero__stage { height: calc(100dvh - 108px); min-height: 542px; padding-block: 8px 14px; }
-  .briefing-bay__marker { margin-bottom: 10px; }
-  .briefing-bay h1 { font-size: clamp(3rem, min(4.5vw, 7.6dvh), 4.35rem); }
-  .briefing-bay__lede { margin-top: 12px; font-size: 0.82rem; }
+  .phase-zero__stage { height: calc(100dvh - 58px); min-height: 592px; padding-block: 16px 20px; }
+  .briefing-bay h1.meridian-display { font-size: clamp(4rem, min(6.3vw, 11dvh), 5.4rem); }
+  .meridian-thesis { margin-top: 20px; font-size: 1.15rem; }
+  .briefing-bay__lede { margin-top: 9px; font-size: 0.8rem; }
   .decision-brief { margin-top: 15px; padding: 13px; }
   .decision-brief textarea { height: 80px; min-height: 80px; }
   .decision-brief__signals { padding-block: 7px 6px; }
   .run-mode button { padding-block: 7px; }
   .decision-brief__footer { margin-top: 8px; }
   .standby-stage { width: min(540px, 91cqh, 46vw); }
-  .council-standby__heading { top: -2px; }
 }
 
 @media (max-width: 1220px) {
   .phase-zero__stage { grid-template-columns: minmax(450px, 0.95fr) minmax(480px, 1.05fr); gap: 24px; width: calc(100% - 44px); }
-  .briefing-bay h1 { font-size: clamp(3rem, 5vw, 4.2rem); }
+  .briefing-bay h1.meridian-display { font-size: clamp(4rem, 6.4vw, 5.2rem); }
   .standby-stage { width: min(590px, 91cqh, 48vw); }
   .standby-agent__copy span { display: none; }
   .standby-probe { font-size: 0.51rem; }
@@ -2185,10 +2231,9 @@ html[data-theme='dark'] .phase-zero {
 @media (max-width: 1000px) {
   .phase-zero { height: auto; min-height: 100dvh; overflow-y: auto; }
   .intake-rail { position: sticky; top: 0; height: 60px; backdrop-filter: blur(18px); }
-  .intake-phase-stepper { height: 54px; }
   .phase-zero__stage { grid-template-columns: 1fr; width: min(780px, calc(100% - 36px)); height: auto; min-height: 0; padding: 34px 0 48px; }
   .briefing-bay { padding: 0; }
-  .briefing-bay h1 { max-width: 690px; }
+  .briefing-bay h1.meridian-display { max-width: 690px; }
   .briefing-bay__lede { max-width: 650px; }
   .council-standby { min-height: 610px; }
   .standby-stage { width: min(590px, calc(100vw - 64px)); }
@@ -2198,15 +2243,9 @@ html[data-theme='dark'] .phase-zero {
   .intake-rail { grid-template-columns: 1fr auto; padding-inline: 18px; }
   .intake-rail__readout { display: none; }
   .local-status { display: none; }
-  .intake-phase-stepper { width: calc(100% - 20px); }
-  .intake-phase-step { gap: 6px; }
-  .intake-phase-step + .intake-phase-step::before { display: none; }
-  .intake-phase-step > span { width: 24px; height: 24px; }
-  .intake-phase-step div { display: none; }
-  .intake-phase-step.is-active div { display: flex; }
   .phase-zero__stage { width: min(100% - 28px, 560px); padding-top: 24px; }
-  .briefing-bay__marker small { display: none; }
-  .briefing-bay h1 { font-size: clamp(2.55rem, 12vw, 3.3rem); line-height: 1.02; }
+  .briefing-bay h1.meridian-display { font-size: clamp(3.65rem, 17vw, 4.55rem); line-height: 0.84; }
+  .meridian-thesis { margin-top: 24px; font-size: 1.18rem; }
   .briefing-bay__lede { font-size: 0.86rem; }
   .decision-brief { padding: 13px; }
   .decision-brief__heading { align-items: flex-start; }
