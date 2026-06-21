@@ -133,7 +133,7 @@ export function PathArena({
       </svg>
 
       <div className="council-atlas">
-        <AtlasGlobe active={isSynthesis} preparing={preparing} results={results} />
+        <AtlasGlobe active={isSynthesis} preparing={preparing} pointingAt={preparing ? null : activeAgent} results={results} />
       </div>
 
       <div className="assumption-cloud" aria-label="Assumptions being tested">

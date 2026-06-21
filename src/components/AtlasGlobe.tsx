@@ -1,21 +1,23 @@
 import { useId } from 'react'
 import type { DecisionResults } from '../domain/types'
+import type { AgentId } from '../scenario/builtin'
 
 interface AtlasGlobeProps {
   compact?: boolean
   active?: boolean
   preparing?: boolean
+  pointingAt?: AgentId | null
   results?: DecisionResults
   className?: string
 }
 
-export function AtlasGlobe({ compact = false, active = false, preparing = false, results, className = '' }: AtlasGlobeProps) {
+export function AtlasGlobe({ compact = false, active = false, preparing = false, pointingAt = null, results, className = '' }: AtlasGlobeProps) {
   const id = useId().replaceAll(':', '')
   const glassId = `core-glass-${id}`
   const glowId = `core-glow-${id}`
 
   return (
-    <div className={`atlas-globe meridian-core${compact ? ' atlas-globe--compact' : ''}${active ? ' is-active' : ''}${preparing ? ' is-preparing' : ''} ${className}`}>
+    <div className={`atlas-globe meridian-core${compact ? ' atlas-globe--compact' : ''}${active ? ' is-active' : ''}${preparing ? ' is-preparing' : ''}${pointingAt ? ` is-pointing is-pointing-${pointingAt}` : ''} ${className}`}>
       <svg className="meridian-core__svg" viewBox="0 0 320 320" aria-hidden="true">
         <defs>
           <radialGradient id={glassId} cx="50%" cy="42%" r="62%">
@@ -53,11 +55,14 @@ export function AtlasGlobe({ compact = false, active = false, preparing = false,
         </g>
 
         <circle className="meridian-core__pulse" cx="160" cy="160" r="33" />
-        <path
-          className="meridian-core__star"
-          d="M160 92 170 148 228 160 170 172 160 228 150 172 92 160 150 148 160 92Z"
-          filter={`url(#${glowId})`}
-        />
+        <g className="meridian-core__bearing">
+          <path
+            className="meridian-core__star"
+            d="M160 92 170 148 228 160 170 172 160 228 150 172 92 160 150 148 160 92Z"
+            filter={`url(#${glowId})`}
+          />
+          <circle className="meridian-core__bearing-tip" cx="160" cy="92" r="3" />
+        </g>
         <circle className="meridian-core__center-ring" cx="160" cy="160" r="15" />
         <circle className="meridian-core__center" cx="160" cy="160" r="5" />
 
