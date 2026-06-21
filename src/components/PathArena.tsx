@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import type { DecisionResults, LedgerEntry } from '../domain/types'
 import type { RetrievalResult } from '../evidence/retrieval'
+import type { ReactNode } from 'react'
 import {
   AGENTS,
   type AgentId,
@@ -13,11 +14,11 @@ import { AtlasGlobe } from './AtlasGlobe'
 import { CitationChip } from './CitationChip'
 import { LoadingEllipsis } from './LoadingEllipsis'
 
-const personaCopy: Record<AgentId, string> = {
+const personaCopy: Record<AgentId, ReactNode> = {
   stableAdvocate: 'Protects Stability & Continuity',
   startupAdvocate: 'Tests Change & Possibility',
-  researchAdvocate: 'Maps Values & Long-Term Fit',
-  skeptic: 'Challenges the Whole Story',
+  researchAdvocate: <>Maps Values & <br />Long-Term Fit</>,
+  skeptic: <>Challenges the <br />Whole Story</>,
 }
 
 const routeByAgent: Record<AgentId, string> = {

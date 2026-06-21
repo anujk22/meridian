@@ -192,9 +192,6 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
               </motion.article>
             ))}
 
-            {councilMembers.map((agent) => (
-              <span className={`standby-probe standby-probe--${agent.id}`} key={`${agent.id}-probe`}><i />{agent.probe}</span>
-            ))}
           </div>
 
           <div className="council-protocol">
