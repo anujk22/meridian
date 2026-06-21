@@ -38,6 +38,7 @@ interface PathArenaProps {
   latestLedgerEntry: LedgerEntry | null
   results: DecisionResults
   preparing?: boolean
+  preparationStatus?: string
   preparationError?: string | null
   onReturnToIntake?: () => void
 }
@@ -55,6 +56,7 @@ export function PathArena({
   latestLedgerEntry,
   results,
   preparing = false,
+  preparationStatus = 'The four counselors are reading the career decision.',
   preparationError = null,
   onReturnToIntake,
 }: PathArenaProps) {
@@ -79,7 +81,7 @@ export function PathArena({
   const log = preparationError
     ? ['Live council could not assemble.', preparationError]
     : preparing
-      ? ['The four counselors are reading the career decision.', 'No claims will appear until the live scenario is ready.']
+      ? [preparationStatus, 'No claims appear until their citations and ranges pass validation.']
       : latestLedgerEntry
         ? [`${latestLedgerEntry.actor} updated the model.`, latestLedgerEntry.title, latestLedgerEntry.detail]
         : activeMemo
@@ -108,7 +110,7 @@ export function PathArena({
     <section className={`arena council-map arena--${phase}${preparing ? ' is-preparing' : ''}${preparationError ? ' has-preparation-error' : ''}`} aria-label="Decision council deliberation">
       <div className="council-map__caption">
         <strong>{preparing ? 'Council Assembling' : isCrossExam ? 'Assumption Under Challenge' : isSynthesis ? 'Council Synthesis' : 'Four Perspectives, One Path Decision'}</strong>
-        <span>{preparing ? 'The atlas stays visible while the local model prepares the memos.' : 'Claims, challenges, evidence, and model changes converge here.'}</span>
+        <span>{preparing ? preparationStatus : 'Claims, challenges, evidence, and model changes converge here.'}</span>
       </div>
 
       <svg className="council-map__orbits" viewBox="0 0 1200 560" preserveAspectRatio="none" aria-hidden="true">

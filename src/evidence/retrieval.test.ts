@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { getEvidenceById, keywordRetrieve, retrieveEvidence } from './retrieval'
-import { BUILTIN_RETRIEVAL_QUERIES } from './corpus'
+import { BUILTIN_RETRIEVAL_QUERIES, EVIDENCE_CORPUS } from './corpus'
+import index from './evidence-index.json'
 
 describe('evidence retrieval', () => {
   it('retrieves startup equity evidence with keyword fallback', () => {
@@ -19,5 +20,9 @@ describe('evidence retrieval', () => {
   it('resolves every semantic citation to local metadata', async () => {
     const result = await retrieveEvidence(BUILTIN_RETRIEVAL_QUERIES[0], 3)
     result.chunks.forEach((chunk) => expect(getEvidenceById(chunk.id)).toEqual(chunk))
+  })
+
+  it('keeps a semantic vector for every curated evidence chunk', () => {
+    expect(Object.keys(index.corpus).sort()).toEqual(EVIDENCE_CORPUS.map(({ id }) => id).sort())
   })
 })

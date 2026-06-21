@@ -5,7 +5,8 @@ import { createInitialModel } from '../domain/model'
 import { applyMutation } from '../domain/mutations'
 import type { ModelMutation } from '../domain/types'
 import { retrieveEvidence, type RetrievalResult } from '../evidence/retrieval'
-import { generateLiveScenario, listLocalModels, preferredLocalModelId, type LiveScenario } from '../integrations/lmStudio'
+import { generateLiveScenario, type LiveScenario } from '../integrations/council'
+import { listLocalModels, preferredLocalModelId } from '../integrations/lmStudio'
 import {
   BUILTIN_PROMPT,
   CLAIMS,
@@ -77,6 +78,7 @@ export function App() {
   const [generating, setGenerating] = useState(false)
   const [liveError, setLiveError] = useState<string | null>(null)
   const [liveEntryState, setLiveEntryState] = useState<'idle' | 'preparing' | 'error'>('idle')
+  const [liveProgress, setLiveProgress] = useState('Reading the career decision')
   const [liveScenario, setLiveScenario] = useState<LiveScenario | null>(null)
   const [guided, setGuided] = useState(true)
   const [controlsOpen, setControlsOpen] = useState(false)
@@ -121,9 +123,10 @@ export function App() {
     setLoadingModels(true)
     try {
       const available = await listLocalModels()
-      const ids = available.map(({ id }) => id)
+      const loaded = available.filter((model) => model.loaded)
+      const ids = loaded.map(({ id }) => id)
       setModels(ids)
-      setSelectedModel((current) => current && ids.includes(current) ? current : preferredLocalModelId(available))
+      setSelectedModel((current) => current && ids.includes(current) ? current : preferredLocalModelId(loaded))
       return available
     } catch (error) {
       setModels([])
@@ -181,16 +184,20 @@ export function App() {
     let generated: LiveScenario | null = null
     if (mode === 'live') {
       setLiveEntryState('preparing')
+      setLiveProgress('Reading the career decision')
       setGenerating(true)
       try {
         const available = await refreshLocalModels()
-        const availableIds = available.map(({ id }) => id)
+        const loaded = available.filter((model) => model.loaded)
+        const availableIds = loaded.map(({ id }) => id)
         const activeModel = selectedModel && availableIds.includes(selectedModel)
           ? selectedModel
-          : preferredLocalModelId(available)
+          : preferredLocalModelId(loaded)
         if (!activeModel) throw new Error('Load Nemotron or another chat model in LM Studio, then try again. Meridian will not cold-load a model.')
         setSelectedModel(activeModel)
-        generated = await generateLiveScenario(prompt, activeModel)
+        generated = await generateLiveScenario(prompt, activeModel, {
+          onProgress: ({ message }) => setLiveProgress(message),
+        })
       } catch (error) {
         setLiveError(error instanceof Error ? error.message : 'LM Studio could not generate the council response.')
         setLiveEntryState('error')
@@ -204,7 +211,7 @@ export function App() {
     presentedBriefRef.current = false
     setLiveScenario(generated)
     setModel(createInitialModel())
-    setCitations({})
+    setCitations(generated?.citations ?? {})
     setControlsOpen(false)
     setLiveEntryState('idle')
     dispatchDemo({ type: 'start' })
@@ -217,6 +224,7 @@ export function App() {
     presentedBriefRef.current = false
     setControlsOpen(false)
     setLiveError(null)
+    setLiveProgress('Reading the career decision')
     setLiveEntryState('idle')
     dispatchDemo({ type: 'reset' })
   }, [])
@@ -328,6 +336,7 @@ export function App() {
           latestLedgerEntry={demo.ledger.at(-1) ?? null}
           results={results}
           preparing={liveEntryState === 'preparing'}
+          preparationStatus={liveProgress}
           preparationError={liveEntryState === 'error' ? liveError : null}
           onReturnToIntake={() => {
             setLiveEntryState('idle')
@@ -336,8 +345,8 @@ export function App() {
         />
         {showingLiveEntry ? (
           <div className="preparing-strip" role="status">
-            <span><i /> {liveEntryState === 'error' ? 'Live generation stopped' : 'The council is assembling around your prompt'}</span>
-            <p>{liveEntryState === 'error' ? 'Return to the composer to check LM Studio and try again.' : 'Ambient motion only. The deliberation begins when the live scenario is ready.'}</p>
+            <span><i /> {liveEntryState === 'error' ? 'Live generation stopped' : liveProgress}</span>
+            <p>{liveEntryState === 'error' ? 'Return to the composer to check LM Studio and try again.' : 'Evidence and independent memos are prepared before the visible deliberation begins.'}</p>
           </div>
         ) : <OutcomePanel results={results} focused={demo.focus === 'axis'} controlsOpen={controlsOpen} onTestAssumptions={handleTestAssumptions} />}
       </div>
