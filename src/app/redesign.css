@@ -31,6 +31,14 @@
   --surface-highlight: oklch(0.29 0.08 326);
   --track: oklch(0.28 0.07 316);
   --on-accent: oklch(0.98 0.012 60);
+  --instrument-glass:
+    radial-gradient(circle at 8% 50%, color-mix(in oklch, var(--polar) 8%, transparent), transparent 36%),
+    linear-gradient(110deg, oklch(0.23 0.07 330 / 0.72), oklch(0.13 0.045 296 / 0.82));
+  --instrument-glass-pill: linear-gradient(110deg, oklch(0.22 0.065 328 / 0.8), oklch(0.14 0.045 297 / 0.88));
+  --instrument-glass-border: color-mix(in oklch, var(--polar) 24%, var(--line-soft));
+  --instrument-glass-shadow:
+    inset 0 1px 0 color-mix(in oklch, var(--ink) 8%, transparent),
+    0 16px 42px oklch(0.035 0.035 285 / 0.18);
   --aurora-background:
     radial-gradient(ellipse 82% 58% at 50% 68%, oklch(0.54 0.17 20 / 0.7), transparent 66%),
     radial-gradient(ellipse 62% 72% at 78% 38%, oklch(0.34 0.14 322 / 0.62), transparent 70%),
@@ -2252,14 +2260,10 @@ body:has(.phase-zero) {
 }
 
 .simulation-shell .outcome-panel {
-  border-color: color-mix(in oklch, var(--polar) 25%, var(--line-soft));
-  background:
-    radial-gradient(circle at 8% 50%, color-mix(in oklch, var(--polar) 10%, transparent), transparent 34%),
-    linear-gradient(110deg, oklch(0.24 0.075 330 / 0.5), oklch(0.13 0.045 296 / 0.68));
-  box-shadow:
-    inset 0 1px 0 color-mix(in oklch, var(--ink) 9%, transparent),
-    0 18px 48px oklch(0.035 0.035 285 / 0.2);
-  backdrop-filter: blur(18px) saturate(112%);
+  border-color: var(--instrument-glass-border);
+  background: var(--instrument-glass);
+  box-shadow: var(--instrument-glass-shadow);
+  backdrop-filter: blur(16px) saturate(110%);
 }
 
 .verdict .verdict__header {
@@ -2267,6 +2271,31 @@ body:has(.phase-zero) {
   background: transparent;
   box-shadow: none;
   backdrop-filter: none;
+}
+
+.simulation-shell :is(.agent-memo, .cross-exam-log, .control-deck, .preparing-strip) {
+  border: 1px solid var(--instrument-glass-border);
+  border-radius: 14px;
+  background: var(--instrument-glass);
+  box-shadow: var(--instrument-glass-shadow);
+  backdrop-filter: blur(16px) saturate(110%);
+}
+
+.simulation-shell .agent-memo.is-delivered {
+  background: var(--instrument-glass);
+}
+
+.simulation-shell :is(.assumption-cloud span, .arena--analysis .cross-exam-log, .arena--recompute .cross-exam-log, .arena--explore .cross-exam-log, .icon-button) {
+  border-color: var(--instrument-glass-border);
+  background: var(--instrument-glass-pill);
+  box-shadow: inset 0 1px 0 color-mix(in oklch, var(--ink) 7%, transparent), 0 8px 24px oklch(0.035 0.035 285 / 0.14);
+  backdrop-filter: blur(14px) saturate(108%);
+}
+
+.simulation-shell .toggle {
+  border-color: var(--instrument-glass-border);
+  background: var(--instrument-glass-pill);
+  box-shadow: inset 0 1px 0 color-mix(in oklch, var(--ink) 6%, transparent);
 }
 
 .phase-zero__field::before,
