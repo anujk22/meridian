@@ -138,14 +138,6 @@ export function PathArena({
         <AtlasGlobe active={isSynthesis} preparing={preparing} pointingAt={preparing ? null : activeAgent} results={results} />
       </div>
 
-      <div className="assumption-cloud" aria-label="Assumptions being tested">
-        <span className={isCrossExam ? 'is-challenged' : ''}>Financial Floor {isCrossExam ? '↓' : ''}</span>
-        <span>Relationship Impact</span>
-        <span className={isSynthesis ? 'is-challenged' : ''}>Long-Term Growth {isSynthesis ? '↑' : ''}</span>
-        <span>Daily Wellbeing</span>
-        <span>Reversibility</span>
-        <span className={isCrossExam ? 'is-challenged' : ''}>Hidden Costs</span>
-      </div>
 
       {AGENTS.map((agent, index) => {
         const memo = memoByAgent[agent.id]

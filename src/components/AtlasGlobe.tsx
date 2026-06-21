@@ -71,12 +71,6 @@ export function AtlasGlobe({ compact = false, active = false, preparing = false,
         <circle className="meridian-core__center-ring" cx="160" cy="160" r="15" />
         <circle className="meridian-core__center" cx="160" cy="160" r="5" />
 
-        <g className="meridian-core__shimmers">
-          <circle cx="160" cy="48" r="3" />
-          <circle cx="257" cy="111" r="2.5" />
-          <circle cx="91" cy="235" r="2.5" />
-          <circle cx="224" cy="246" r="2" />
-        </g>
       </svg>
 
       {!compact && (
