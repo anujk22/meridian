@@ -194,10 +194,6 @@ export function Intake({ prompt, onPromptChange, onStart, recording, mode, onMod
 
           </div>
 
-          <div className="council-protocol">
-            <div><span>Protocol</span><strong>Independent memos → cross-examination → synthesis</strong></div>
-            <small><i /> 4 agents <i /> evidence retrieval <i /> assumption ledger</small>
-          </div>
         </motion.section>
       </div>
     </main>

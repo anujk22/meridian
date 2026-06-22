@@ -15,8 +15,8 @@ import { CitationChip } from './CitationChip'
 import { LoadingEllipsis } from './LoadingEllipsis'
 
 const personaCopy: Record<AgentId, ReactNode> = {
-  stableAdvocate: 'Protects Stability & Continuity',
-  startupAdvocate: 'Tests Change & Possibility',
+  stableAdvocate: <>Protects Stability <br />& Continuity</>,
+  startupAdvocate: <>Tests Change <br />& Possibility</>,
   researchAdvocate: <>Maps Values & <br />Long-Term Fit</>,
   skeptic: <>Challenges the <br />Whole Story</>,
 }
@@ -197,11 +197,13 @@ export function PathArena({
         )}
       </AnimatePresence>
 
-      <motion.aside className="cross-exam-log" aria-live="polite">
-        <div><i /> <strong>{preparing ? 'Preparing Live Council' : isSynthesis ? 'Live Synthesis' : 'Council Signal'}</strong></div>
-        {log.length > 0 ? log.map((line) => <p key={line}>{line}</p>) : <p className="cross-exam-log__loading"><LoadingEllipsis label="Council activity is loading" /></p>}
-        {preparationError && onReturnToIntake ? <button type="button" onClick={onReturnToIntake}>Return to decision composer</button> : <small>{preparing ? 'Waiting for local generation' : 'Updated just now'}</small>}
-      </motion.aside>
+      {!isSynthesis && (
+        <motion.aside className="cross-exam-log" aria-live="polite">
+          <div><i /> <strong>{preparing ? 'Preparing Live Council' : 'Council Signal'}</strong></div>
+          {log.length > 0 ? log.map((line) => <p key={line}>{line}</p>) : <p className="cross-exam-log__loading"><LoadingEllipsis label="Council activity is loading" /></p>}
+          {preparationError && onReturnToIntake ? <button type="button" onClick={onReturnToIntake}>Return to decision composer</button> : <small>{preparing ? 'Waiting for local generation' : 'Updated just now'}</small>}
+        </motion.aside>
+      )}
     </section>
   )
 }

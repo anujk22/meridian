@@ -11,7 +11,7 @@ interface AtlasGlobeProps {
   className?: string
 }
 
-export function AtlasGlobe({ compact = false, active = false, preparing = false, pointingAt = null, results, className = '' }: AtlasGlobeProps) {
+export function AtlasGlobe({ compact = false, active = false, preparing = false, pointingAt = null, className = '' }: AtlasGlobeProps) {
   const id = useId().replaceAll(':', '')
   const glassId = `core-glass-${id}`
   const glowId = `core-glow-${id}`
@@ -73,12 +73,7 @@ export function AtlasGlobe({ compact = false, active = false, preparing = false,
 
       </svg>
 
-      {!compact && (
-        <div className="atlas-globe__readout">
-          <strong>{preparing ? 'Assembling Council' : active ? 'Synthesizing Paths' : 'Decision Atlas'}</strong>
-          <span>{results ? `${results.sampleCount.toLocaleString()} Scenarios · 5 Weighted Factors` : 'Mapping the Decision Space'}</span>
-        </div>
-      )}
+
     </div>
   )
 }
